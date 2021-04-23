@@ -2,6 +2,7 @@
     import Player from "./Player.svelte";
 
     let nClicks : number = 0;
+
 </script>
 
 <style>
