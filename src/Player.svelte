@@ -1,17 +1,19 @@
 <script lang="ts">
-    export let position : number[];
+
+    export let player;
 </script>
 
 <style>
     div {
-        background-color: orange;
-        width: 50px;
-        height: 50px;
         position: absolute;
         border-radius: 25px;
     }
 </style>
 
-<div style="transform: translate({position[0]}px, {position[1]}px) translate(-50%, -50%)">
+<div style="transform: translate({player.position[0]}px, {player.position[1]}px) translate(-50%, -50%);
+            height: {player.size}px;
+            width: {player.size}px;
+            border-radius : {player.size/2}px;
+            background-color : {player.color}">
     
 </div>

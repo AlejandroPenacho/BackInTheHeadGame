@@ -3,14 +3,30 @@ import { prevent_default } from "svelte/internal";
 
     import Player from "./Player.svelte";
 
+    interface Keybinding {
+        left : string,
+        right : string,
+        jump : string,
+        kick : string
+    }
     interface GameData {
         scenarioSize : number[],
-        playerRadius : number
+        gravity : number,
+        jumpSpeed : number
+    }
+    interface Player {
+        position: number[],
+        velocity: number[],
+        touchingGround : boolean,
+        size : number,
+        color : string,
+        keybinding : Keybinding
     }
 
     let gameData : GameData = {
         scenarioSize : [1000, 600],
-        playerRadius : 25
+        gravity : 200,
+        jumpSpeed : 200
     }
 
     let currentlyPressedKeys = {
@@ -20,7 +36,37 @@ import { prevent_default } from "svelte/internal";
         ArrowRight: false
     }
 
-    let playerPosition = [0,0];
+    let nPlayers = 2;
+
+    let playerList: Player[] = [
+        {
+            position : [0,200],
+            velocity : [0,0],
+            touchingGround : false,
+            size : 50,
+            color: "orange",
+            keybinding : {
+                jump : "ArrowUp",
+                left : "ArrowLeft",
+                right : "ArrowRight",
+                kick : "k"
+            }
+        },
+        {
+            position : [800,200],
+            velocity : [0,0],
+            touchingGround : false,
+            size : 50,
+            color: "cyan",
+            keybinding : {
+                jump : "w",
+                left : "a",
+                right : "d",
+                kick : "g"
+            }
+        }        
+    ];
+
     let playerSpeed = 100;
     let currentTime;
 
@@ -31,7 +77,7 @@ import { prevent_default } from "svelte/internal";
             e.preventDefault();
         }
         currentlyPressedKeys[keyPressed] = true;
-        console.log(currentlyPressedKeys);
+        console.log(playerList);
     }
     function processKeyUp(e: KeyboardEvent) {
         let keyPressed = e.key;
@@ -50,19 +96,39 @@ import { prevent_default } from "svelte/internal";
         let timestep = (timeStamp - currentTime)/1000;
         currentTime = timeStamp;
 
+        for (let i= 0; i<nPlayers; i++){
 
-        if (currentlyPressedKeys["ArrowDown"]) {
-            playerPosition[1] += playerSpeed * timestep;
+            let player = playerList[i];
+
+            if (currentlyPressedKeys[player.keybinding.right]) {
+                player.velocity[0] = playerSpeed;
+            }
+            if (currentlyPressedKeys[player.keybinding.left]) {
+                player.velocity[0] = -playerSpeed;
+            }
+            if (!currentlyPressedKeys[player.keybinding.right] && !currentlyPressedKeys[player.keybinding.left]){
+                player.velocity[0] = 0;
+            }
+
+            if (currentlyPressedKeys[player.keybinding.jump] && player.touchingGround) {
+                player.velocity[1] = -gameData.jumpSpeed;
+                player.touchingGround = false;
+            }        
+
+            player.position[0] += player.velocity[0] * timestep;
+            player.position[1] += player.velocity[1] * timestep;
+
+            player.velocity[1] += gameData.gravity * timestep;
+
+            if  (player.position[1] >= (gameData.scenarioSize[1] - player.size/2) &&
+                (player.velocity[1] > 0)){
+
+                    player.velocity[1] = 0;
+                    player.position[1] = gameData.scenarioSize[1] - player.size/2;
+                    player.touchingGround = true;
+            }
         }
-        if (currentlyPressedKeys["ArrowUp"]) {
-            playerPosition[1] -= playerSpeed * timestep;
-        }
-        if (currentlyPressedKeys["ArrowRight"]) {
-            playerPosition[0] += playerSpeed * timestep;
-        }
-        if (currentlyPressedKeys["ArrowLeft"]) {
-            playerPosition[0] -= playerSpeed * timestep;
-        }       
+        playerList = playerList;
 
         requestAnimationFrame(mainLoop);
     }
@@ -84,7 +150,9 @@ import { prevent_default } from "svelte/internal";
 </style>
 
 <div>
-    <Player position={playerPosition} />
+    {#each playerList as player}
+        <Player player={player} />
+    {/each}
 </div>
 
 
