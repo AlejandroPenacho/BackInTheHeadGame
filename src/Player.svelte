@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Foot from "./Foot.svelte";
 
     export let player;
 </script>

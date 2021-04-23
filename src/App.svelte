@@ -19,6 +19,7 @@ import { prevent_default } from "svelte/internal";
         position: number[],
         velocity: number[],
         touchingGround : boolean,
+        extendingFoot : boolean,
         size : number,
         color : string,
         keybinding : Keybinding
@@ -49,26 +50,28 @@ import { prevent_default } from "svelte/internal";
             position : [800,200],
             velocity : [0,0],
             touchingGround : false,
+            extendingFoot: false,
             size : 100,
             color: "orange",
             keybinding : {
                 jump : "ArrowUp",
                 left : "ArrowLeft",
                 right : "ArrowRight",
-                kick : "k"
+                kick : "l"
             }
         },
         {
             position : [100,200],
             velocity : [0,0],
             touchingGround : false,
+            extendingFoot: false,
             size : 100,
             color: "cyan",
             keybinding : {
-                jump : "w",
-                left : "a",
-                right : "d",
-                kick : "g"
+                jump : "g",
+                left : "v",
+                right : "n",
+                kick : "z"
             }
         }        
     ];
@@ -82,9 +85,10 @@ import { prevent_default } from "svelte/internal";
     let playerSpeed = 100;
     let currentTime;
 
+    let keyPressed;
 
     function processKeyDown(e: KeyboardEvent) {
-        let keyPressed = e.key;
+        keyPressed = e.key;
         if (keyPressed !== "F12" && keyPressed !== "F5"){
             e.preventDefault();
         }
@@ -168,9 +172,9 @@ import { prevent_default } from "svelte/internal";
             ball.velocity[1] *= -1;
         }        
 
-        ball = ball;
 
         detectCollisions();
+        ball = ball;
 
 
         requestAnimationFrame(mainLoop);
@@ -222,5 +226,7 @@ import { prevent_default } from "svelte/internal";
     {/each}
     <Ball data={ball} />
 </div>
+
+<p> {keyPressed}</p>
 
 
