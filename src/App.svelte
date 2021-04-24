@@ -1,94 +1,21 @@
 <script lang="ts">
-import { missing_component, prevent_default } from "svelte/internal";
 
     import Player from "./Player.svelte";
     import Ball from "./Ball.svelte";
+    import type {BallStruct} from "./basic/base";
+    import {GameData, Character, Side} from "./basic/base";
 
-    interface Keybinding {
-        left : string,
-        right : string,
-        jump : string,
-        kick : string
-    }
-    interface GameData {
-        scenarioSize : number[],
-        gravity : number,
-        jumpSpeed : number
-    }
-    interface Player {
-        position: number[],
-        velocity: number[],
-        touchingGround : boolean,
-        footSize : number,
-        extendingFoot : boolean,
-        direction: number,
-        footAngle : number,
-        size : number,
-        color : string,
-        keybinding : Keybinding
-    }
-    interface Ball {
-        position: number[],
-        velocity: number[],
-        size : number,
-        dragCoefficient: number
-    }
+    let game = new GameData();
 
-    let gameData : GameData = {
-        scenarioSize : [1000, 600],
-        gravity : 900,
-        jumpSpeed : 600
-    }
+    let currentlyPressedKeys = {};
 
-    let currentlyPressedKeys = {
-        ArrowUp: false,
-        ArrowDown: false,
-        ArrowLeft: false,
-        ArrowRight: false
-    }
 
-    let nPlayers = 2;
-
-    let playerList: Player[] = [
-        {
-            position : [800,200],
-            velocity : [0,0],
-            touchingGround : false,
-            extendingFoot: false,
-            footAngle: 0,
-            footSize : 100,
-            size : 100,
-            direction: -1,
-            color: "orange",
-            keybinding : {
-                jump : "ArrowUp",
-                left : "ArrowLeft",
-                right : "ArrowRight",
-                kick : "l"
-            }
-        },
-        {
-            position : [100,200],
-            velocity : [0,0],
-            touchingGround : false,
-            extendingFoot: false,
-            footAngle: 0,
-            footSize : 100,
-            size : 100,
-            direction: 1,
-            color: "cyan",
-            keybinding : {
-                jump : "s",
-                left : "z",
-                right : "c",
-                kick : "b"
-            }
-        }        
+    let playerList : Character[] = [
+        new Character(Side.left),
+        new Character(Side.right)
     ];
 
-    // Check https://en.key-test.ru/ for appropiate keybindings
-
-    let ball: Ball = {
+    let ball: BallStruct = {
         position: [400, 400],
         velocity: [100, -100],
         size : 60,
@@ -126,7 +53,7 @@ import { missing_component, prevent_default } from "svelte/internal";
         let timestep = (timeStamp - currentTime)/1000;
         currentTime = timeStamp;
 
-        for (let i= 0; i<nPlayers; i++){
+        for (let i= 0; i<game.nPlayers; i++){
 
             let player = playerList[i];
 
@@ -141,29 +68,29 @@ import { missing_component, prevent_default } from "svelte/internal";
             }
 
             if (currentlyPressedKeys[player.keybinding.jump] && player.touchingGround) {
-                player.velocity[1] = -gameData.jumpSpeed;
+                player.velocity[1] = -game.jumpSpeed;
                 player.touchingGround = false;
             }
 
-            if (currentlyPressedKeys[player.keybinding.kick] && player.footAngle < 90){
-                player.footAngle += 180*timestep;
+            if (currentlyPressedKeys[player.keybinding.kick] && player.foot.theta < 90){
+                player.foot.theta += 360*timestep;
             }
-            if (!currentlyPressedKeys[player.keybinding.kick] && player.footAngle > 0){
-                player.footAngle -= 360*timestep;
-                player.footAngle = Math.max(player.footAngle, 0);
+            if (!currentlyPressedKeys[player.keybinding.kick] && player.foot.theta > 0){
+                player.foot.theta-= 720*timestep;
+                player.foot.theta = Math.max(player.foot.theta, 0);
             }
 
 
             player.position[0] += player.velocity[0] * timestep;
             player.position[1] += player.velocity[1] * timestep;
 
-            player.velocity[1] += gameData.gravity * timestep;
+            player.velocity[1] += game.gravity * timestep;
 
-            if  (player.position[1] >= (gameData.scenarioSize[1] - player.size/2) &&
+            if  (player.position[1] >= (game.scenarioSize[1] - player.size/2) &&
                 (player.velocity[1] > 0)){
 
                     player.velocity[1] = 0;
-                    player.position[1] = gameData.scenarioSize[1] - player.size/2;
+                    player.position[1] = game.scenarioSize[1] - player.size/2;
                     player.touchingGround = true;
             }
         }
@@ -173,12 +100,12 @@ import { missing_component, prevent_default } from "svelte/internal";
         ball.position[0] += ball.velocity[0] * timestep;
         ball.position[1] += ball.velocity[1] * timestep;
 
-        ball.velocity[1] += gameData.gravity * timestep;
+        ball.velocity[1] += game.gravity * timestep;
 
         ball.velocity[0] *= (1- ball.dragCoefficient);
         ball.velocity[0] *= (1- ball.dragCoefficient);
 
-        if (ball.position[0] > gameData.scenarioSize[0]-ball.size/2 &&
+        if (ball.position[0] > game.scenarioSize[0]-ball.size/2 &&
             ball.velocity[0] > 0){
 
                 if (ball.position[1] > 400){
@@ -196,7 +123,7 @@ import { missing_component, prevent_default } from "svelte/internal";
 
             ball.velocity[0] *= -1;
         }
-        if (ball.position[1] > gameData.scenarioSize[1]-ball.size/2 &&
+        if (ball.position[1] > game.scenarioSize[1]-ball.size/2 &&
             ball.velocity[1] > 0){
 
             ball.velocity[1] *= -1;
@@ -217,7 +144,7 @@ import { missing_component, prevent_default } from "svelte/internal";
 
 
     function detectCollisions() {
-        for (let i=0; i<nPlayers; i++){
+        for (let i=0; i<game.nPlayers; i++){
             let player = playerList[i];
             let deltaX = ball.position[0] - player.position[0];
             let deltaY = ball.position[1] - player.position[1];
