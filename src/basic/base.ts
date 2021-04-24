@@ -64,7 +64,7 @@ export class Character {
     foot : Foot;
     color : string;
     size : number;
-    direction: number;
+    side: Side;
 
     constructor(side : Side) {
 
@@ -72,13 +72,13 @@ export class Character {
             this.position = standardPlayerConfig["left"].position;
             this.keybinding = standardPlayerConfig["left"].keybinding;
             this.color = standardPlayerConfig["left"].color;
-            this.direction = 1;
         } else {
             this.position = standardPlayerConfig["right"].position;
             this.keybinding = standardPlayerConfig["right"].keybinding;
             this.color = standardPlayerConfig["right"].color;
-            this.direction = -1;
         }
+
+        this.side = side;
         this.velocity = [0,0];
         this.touchingGround = false;
         this.size = 100;
@@ -86,7 +86,32 @@ export class Character {
         this.foot = new Foot(side);
     }
 
-    setFootPosition(){
+    getFootPosition() : number[] {
+
+        let footAngle = this.foot.theta - this.foot.alpha;
+
+        let firstMove = [-this.foot.length/2, -this.foot.width/2];
+        let moveToCharacterCenter = this.position;
+        let moveToEdge = [
+            (this.size/2-this.foot.width/2) * Math.sin(this.foot.theta*Math.PI/180),
+            (this.size/2-this.foot.width/2) * Math.cos(this.foot.theta*Math.PI/180)
+        ]
+
+
+        if (this.side === Side.right){
+            moveToEdge[0] *= -1;
+        }
+        let lastTouch = [
+            (this.foot.length/2 - this.foot.width/2) * Math.cos(footAngle*Math.PI/180),
+            -(this.foot.length/2 - this.foot.width/2) * Math.sin(footAngle*Math.PI/180)
+        ];
+
+
+        return [
+            firstMove[0] + moveToCharacterCenter[0] + moveToEdge[0] + lastTouch[0],
+            firstMove[1] + moveToCharacterCenter[1] + moveToEdge[1] + lastTouch[1],
+            -footAngle
+    ]
 
     }
 }
@@ -97,9 +122,6 @@ class Foot {
     alpha : number;
     length : number;
     width : number;
-
-    position : number;
-    angle : number;
 
     constructor(side) {
         this.theta = 0;

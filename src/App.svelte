@@ -205,5 +205,7 @@
     {/each}
     <Ball data={ball} />
 </div>
-
+<p>
+    {playerList[0].getFootPosition()}
+</p>
 

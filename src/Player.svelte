@@ -18,4 +18,4 @@
             background-color : {player.color}">
     
 </div>
-<Foot data={player}/>
+<Foot player={player}/>

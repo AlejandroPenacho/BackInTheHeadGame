@@ -1,5 +1,8 @@
 <script lang="ts">
-    export let data;
+    export let player;
+    let positionData : number[];
+
+    $: positionData = player.getFootPosition();
 </script>
 
 <style>
@@ -7,12 +10,11 @@
         background-color: darkgoldenrod;
         position: absolute;
         border-radius: 15px;
-        transform-origin: 0px -35px;
     }
 </style>
 
 <div style="height: 30px;
-            width: {data.footSize}px;
-            transform:  translate({data.position[0]}px, {data.position[1] + 35}px) rotate({-data.direction*data.footAngle}deg) translate({35*(data.direction-1)}px, 0) translate(-15px, -15px)">
+            width: {player.foot.length}px;
+            transform:  translate({positionData[0]}px, {positionData[1]}px) rotate({positionData[2]}deg)">
     
 </div>
