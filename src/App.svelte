@@ -1,5 +1,5 @@
 <script lang="ts">
-import { prevent_default } from "svelte/internal";
+import { missing_component, prevent_default } from "svelte/internal";
 
     import Player from "./Player.svelte";
     import Ball from "./Ball.svelte";
@@ -19,7 +19,10 @@ import { prevent_default } from "svelte/internal";
         position: number[],
         velocity: number[],
         touchingGround : boolean,
+        footSize : number,
         extendingFoot : boolean,
+        direction: number,
+        footAngle : number,
         size : number,
         color : string,
         keybinding : Keybinding
@@ -33,8 +36,8 @@ import { prevent_default } from "svelte/internal";
 
     let gameData : GameData = {
         scenarioSize : [1000, 600],
-        gravity : 500,
-        jumpSpeed : 400
+        gravity : 900,
+        jumpSpeed : 600
     }
 
     let currentlyPressedKeys = {
@@ -52,7 +55,10 @@ import { prevent_default } from "svelte/internal";
             velocity : [0,0],
             touchingGround : false,
             extendingFoot: false,
+            footAngle: 0,
+            footSize : 100,
             size : 100,
+            direction: -1,
             color: "orange",
             keybinding : {
                 jump : "ArrowUp",
@@ -66,7 +72,10 @@ import { prevent_default } from "svelte/internal";
             velocity : [0,0],
             touchingGround : false,
             extendingFoot: false,
+            footAngle: 0,
+            footSize : 100,
             size : 100,
+            direction: 1,
             color: "cyan",
             keybinding : {
                 jump : "s",
@@ -134,7 +143,16 @@ import { prevent_default } from "svelte/internal";
             if (currentlyPressedKeys[player.keybinding.jump] && player.touchingGround) {
                 player.velocity[1] = -gameData.jumpSpeed;
                 player.touchingGround = false;
-            }        
+            }
+
+            if (currentlyPressedKeys[player.keybinding.kick] && player.footAngle < 90){
+                player.footAngle += 180*timestep;
+            }
+            if (!currentlyPressedKeys[player.keybinding.kick] && player.footAngle > 0){
+                player.footAngle -= 360*timestep;
+                player.footAngle = Math.max(player.footAngle, 0);
+            }
+
 
             player.position[0] += player.velocity[0] * timestep;
             player.position[1] += player.velocity[1] * timestep;
