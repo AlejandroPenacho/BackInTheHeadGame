@@ -86,6 +86,8 @@ import { prevent_default } from "svelte/internal";
         dragCoefficient : 0.001
     }
 
+    let score = [0,0];
+
     let playerSpeed = 200;
     let currentTime;
 
@@ -161,10 +163,18 @@ import { prevent_default } from "svelte/internal";
         if (ball.position[0] > gameData.scenarioSize[0]-ball.size/2 &&
             ball.velocity[0] > 0){
 
+                if (ball.position[1] > 400){
+                    score = [score[0]+1 , score[1]];
+                }
+
             ball.velocity[0] *= -1;
         }
         if (ball.position[0] < ball.size/2 &&
             ball.velocity[0] < 0){
+
+                if (ball.position[1] > 400){
+                    score = [score[0], score[1] +1];
+                }
 
             ball.velocity[0] *= -1;
         }
@@ -219,7 +229,7 @@ import { prevent_default } from "svelte/internal";
 </script>
 
 <style>
-    div {
+    div.mainScene{
         background-color:darkblue;
         width: 1000px;
         height: 600px;
@@ -227,16 +237,28 @@ import { prevent_default } from "svelte/internal";
         -moz-user-select: none;
         -webkit-user-select: none;
         cursor: pointer;
+        position: relative;
+    }
+
+    div.score {
+        width: 100%;
+        margin: auto;
+        display: flex;
+        font-size: 80px;
+        color: white;
+        position: absolute;
+        justify-content: center;
     }
 </style>
 
-<div>
+<div class="mainScene">
+    <div class="score">
+        <p>{score[0]}-{score[1]}</p>
+    </div>
     {#each playerList as player}
         <Player player={player} />
     {/each}
     <Ball data={ball} />
 </div>
-
-<p> {keyPressed}</p>
 
 
