@@ -27,13 +27,14 @@ import { prevent_default } from "svelte/internal";
     interface Ball {
         position: number[],
         velocity: number[],
-        size : number
+        size : number,
+        dragCoefficient: number
     }
 
     let gameData : GameData = {
         scenarioSize : [1000, 600],
-        gravity : 200,
-        jumpSpeed : 200
+        gravity : 500,
+        jumpSpeed : 400
     }
 
     let currentlyPressedKeys = {
@@ -68,21 +69,24 @@ import { prevent_default } from "svelte/internal";
             size : 100,
             color: "cyan",
             keybinding : {
-                jump : "g",
-                left : "v",
-                right : "n",
-                kick : "z"
+                jump : "s",
+                left : "z",
+                right : "c",
+                kick : "b"
             }
         }        
     ];
 
+    // Check https://en.key-test.ru/ for appropiate keybindings
+
     let ball: Ball = {
         position: [400, 400],
         velocity: [100, -100],
-        size : 60
+        size : 60,
+        dragCoefficient : 0.001
     }
 
-    let playerSpeed = 100;
+    let playerSpeed = 200;
     let currentTime;
 
     let keyPressed;
@@ -151,6 +155,9 @@ import { prevent_default } from "svelte/internal";
 
         ball.velocity[1] += gameData.gravity * timestep;
 
+        ball.velocity[0] *= (1- ball.dragCoefficient);
+        ball.velocity[0] *= (1- ball.dragCoefficient);
+
         if (ball.position[0] > gameData.scenarioSize[0]-ball.size/2 &&
             ball.velocity[0] > 0){
 
@@ -191,18 +198,21 @@ import { prevent_default } from "svelte/internal";
 
             let normalVector = [deltaX, deltaY];
             let distance = Math.pow(Math.pow(deltaX,2)+Math.pow(deltaY,2),0.5);
-            let collisionSpeed = Math.pow(Math.pow(deltaVX,2)+Math.pow(deltaVY,2),0.5);
+            let deltaSpeed = Math.pow(Math.pow(deltaVX,2)+Math.pow(deltaVY,2),0.5);
+
+            let collisionSpeed = (deltaVX*normalVector[0] + deltaVY*normalVector[1])/(distance);
             
 
-            if (distance < (player.size/2 + ball.size/2)){
-                let normalComponent = (deltaVX*normalVector[0] + deltaVY*normalVector[1])/(distance*collisionSpeed);
-                if (normalComponent < 0){
-                    ball.velocity[0] += 2*deltaVX*normalComponent;
-                    ball.velocity[1] += 2*deltaVY*normalComponent;
+            if (distance <= (player.size/2 + ball.size/2)){
+                if (collisionSpeed < 0){
+                    ball.velocity[0] -= 2*collisionSpeed*normalVector[0]/distance;
+                    ball.velocity[1] -= 2*collisionSpeed*normalVector[1]/distance;
                 }
             }
         }
     }
+
+    ball = ball;
 
     requestAnimationFrame(mainLoop);
 
