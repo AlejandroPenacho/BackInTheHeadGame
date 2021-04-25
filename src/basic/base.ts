@@ -120,6 +120,32 @@ export class Character {
     ]
 
     }
+
+    computeCollision(ball: BallStruct){
+        this.computeHeadCollision(ball);
+//        this.computeFootCollision(ball);
+    }
+
+    computeHeadCollision(ball: BallStruct){
+        let deltaX = ball.position[0] - this.position[0];
+        let deltaY = ball.position[1] - this.position[1];
+        let deltaVX = ball.velocity[0] - this.velocity[0];
+        let deltaVY = ball.velocity[1] - this.velocity[1];
+
+        let normalVector = [deltaX, deltaY];
+        let distance = Math.pow(Math.pow(deltaX,2)+Math.pow(deltaY,2),0.5);
+
+        let collisionSpeed = (deltaVX*normalVector[0] + deltaVY*normalVector[1])/(distance);
+        
+
+        if (distance <= (this.size/2 + ball.size/2)){
+            if (collisionSpeed < 0){
+                ball.velocity[0] -= 2*collisionSpeed*normalVector[0]/distance;
+                ball.velocity[1] -= 2*collisionSpeed*normalVector[1]/distance;
+            }
+        }
+    }
+
 }
 
 class Foot {

@@ -19,7 +19,7 @@
         position: [400, 400],
         velocity: [100, -100],
         size : 60,
-        dragCoefficient : 0.001
+        dragCoefficient : 0.00003
     }
 
     let score = [0,0];
@@ -102,8 +102,8 @@
 
         ball.velocity[1] += game.gravity * timestep;
 
-        ball.velocity[0] *= (1- ball.dragCoefficient);
-        ball.velocity[0] *= (1- ball.dragCoefficient);
+        ball.velocity[0] -= ball.dragCoefficient * ball.velocity[0] * Math.abs(ball.velocity[0]);
+        ball.velocity[1] -= ball.dragCoefficient * ball.velocity[1] * Math.abs(ball.velocity[1]);
 
         if (ball.position[0] > game.scenarioSize[0]-ball.size/2 &&
             ball.velocity[0] > 0){
@@ -126,7 +126,7 @@
         if (ball.position[1] > game.scenarioSize[1]-ball.size/2 &&
             ball.velocity[1] > 0){
 
-            ball.velocity[1] *= -1;
+            ball.velocity[1] *= -0.8;
         }
         if (ball.position[1] < ball.size/2 &&
             ball.velocity[1] < 0){
@@ -146,24 +146,7 @@
     function detectCollisions() {
         for (let i=0; i<game.nPlayers; i++){
             let player = playerList[i];
-            let deltaX = ball.position[0] - player.position[0];
-            let deltaY = ball.position[1] - player.position[1];
-            let deltaVX = ball.velocity[0] - player.velocity[0];
-            let deltaVY = ball.velocity[1] - player.velocity[1];
-
-            let normalVector = [deltaX, deltaY];
-            let distance = Math.pow(Math.pow(deltaX,2)+Math.pow(deltaY,2),0.5);
-            let deltaSpeed = Math.pow(Math.pow(deltaVX,2)+Math.pow(deltaVY,2),0.5);
-
-            let collisionSpeed = (deltaVX*normalVector[0] + deltaVY*normalVector[1])/(distance);
-            
-
-            if (distance <= (player.size/2 + ball.size/2)){
-                if (collisionSpeed < 0){
-                    ball.velocity[0] -= 2*collisionSpeed*normalVector[0]/distance;
-                    ball.velocity[1] -= 2*collisionSpeed*normalVector[1]/distance;
-                }
-            }
+            player.computeCollision(ball);
         }
     }
 
