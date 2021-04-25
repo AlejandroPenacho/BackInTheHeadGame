@@ -88,19 +88,25 @@ export class Character {
 
     getFootPosition() : number[] {
 
-        let footAngle = this.foot.theta - this.foot.alpha;
+        let footAngle;
+        let theta;
+
+        if (this.side === Side.left){
+            footAngle = this.foot.theta - this.foot.alpha;
+            theta = this.foot.theta;
+        } else {
+            footAngle = -this.foot.theta + this.foot.alpha + 180;
+            theta = -this.foot.theta;
+        }
+
 
         let firstMove = [-this.foot.length/2, -this.foot.width/2];
         let moveToCharacterCenter = this.position;
         let moveToEdge = [
-            (this.size/2-this.foot.width/2) * Math.sin(this.foot.theta*Math.PI/180),
-            (this.size/2-this.foot.width/2) * Math.cos(this.foot.theta*Math.PI/180)
+            (this.size/2-this.foot.width/2) * Math.sin(theta*Math.PI/180),
+            (this.size/2-this.foot.width/2) * Math.cos(theta*Math.PI/180)
         ]
 
-
-        if (this.side === Side.right){
-            moveToEdge[0] *= -1;
-        }
         let lastTouch = [
             (this.foot.length/2 - this.foot.width/2) * Math.cos(footAngle*Math.PI/180),
             -(this.foot.length/2 - this.foot.width/2) * Math.sin(footAngle*Math.PI/180)
