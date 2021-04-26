@@ -1,3 +1,5 @@
+import { addEmitHelper, formatDiagnosticsWithColorAndContext } from "typescript";
+
 export interface Keybinding {
     left : string,
     right : string,
@@ -41,6 +43,13 @@ let standardPlayerConfig = {
 }
 // Check https://en.key-test.ru/ for appropiate keybindings
 
+
+function changeBase(coord : number[], angle : number) : number[] {
+    return [
+        coord[0] * Math.cos(angle * Math.PI/180) - coord[1] * Math.sin(angle*Math.PI/180),
+        coord[0] * Math.sin(angle * Math.PI/180) + coord[1] * Math.cos(angle * Math.PI/180)
+    ]
+}
 
 export class GameData {
     scenarioSize : number[];
@@ -123,7 +132,7 @@ export class Character {
 
     computeCollision(ball: BallStruct){
         this.computeHeadCollision(ball);
-//        this.computeFootCollision(ball);
+        this.computeFootCollision(ball);
     }
 
     computeHeadCollision(ball: BallStruct){
@@ -146,19 +155,74 @@ export class Character {
         }
     }
 
+    computeFootCollision(ball: BallStruct){
+        let [footX, footY, footAngle] = this.getFootPosition();
+
+        footAngle = -footAngle;
+
+        let deltaX0 = [ball.position[0] - footX, ball.position[1] - footY];
+
+        let deltaX1 = changeBase(deltaX0, footAngle);
+
+        let ballVelocity1 = changeBase(ball.velocity, footAngle);
+
+        let normal1 : number[];
+
+        if (deltaX1[0] <= this.foot.rectLength && deltaX1[0] >= 0){
+            if (deltaX1[1] < (this.foot.width/2 + ball.size/2) && deltaX1[1] > 0){
+                normal1 = [0, 1];
+            } else if (deltaX1[1] > -(this.foot.width/2 + ball.size/2) && deltaX1[1] < 0){
+                normal1 = [0, -1];
+            } else {
+                return;
+            }
+            let footTouchPosition1 = [
+                (this.size/2-this.foot.width/2)*Math.sin(this.foot.alpha) + deltaX1[0],
+                (this.size/2-this.foot.width/2)*Math.sin(this.foot.alpha) + deltaX1[1]*normal1[1]
+            ];
+
+        let bodyVelocity1 = changeBase(this.velocity, footAngle);
+
+        let footVelocityAtPoint1 = [
+            footTouchPosition1[1] * this.foot.thetadot + bodyVelocity1[0],
+            -footTouchPosition1[0] * this.foot.thetadot + bodyVelocity1[1]
+        ];
+
+        let footNormalSpeed1 = footVelocityAtPoint1[1] * normal1[1];
+        let ballNormalSpeed1 = ballVelocity1[1] * normal1[1];
+        let collisionSpeed = footNormalSpeed1 - ballNormalSpeed1;
+
+        if (collisionSpeed > 0){
+            let ballExtraSpeed = collisionSpeed * 2;
+            let normal0 = [
+                normal1[0] * Math.cos(footAngle*Math.PI/180) + normal1[1] * Math.sin(footAngle*Math.PI/180),
+                -normal1[0] * Math.sin(footAngle*Math.PI/180) + normal1[1] * Math.cos(footAngle*Math.PI/180)
+            ]
+            ball.velocity[0] += ballExtraSpeed*normal0[0];
+            ball.velocity[1] += ballExtraSpeed*normal0[1];
+        }
+
+        }
+
+    }
+
 }
 
 class Foot {
 
     theta : number;
+    thetadot : number;
     alpha : number;
     length : number;
     width : number;
+    rectLength : number;
 
     constructor(side) {
         this.theta = 0;
-        this.alpha = 0;
-        this.length = 100;
+        this.thetadot = 0;
+        this.alpha = 15;
+        this.length = 200;
         this.width = 30;
+        this.rectLength = this.length - this.width;
     }
 }
