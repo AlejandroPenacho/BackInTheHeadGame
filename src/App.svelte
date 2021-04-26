@@ -74,15 +74,24 @@
 
             if (currentlyPressedKeys[player.keybinding.kick] && player.foot.theta < 90){
                 player.foot.theta += 360*timestep;
-                player.foot.thetadot = 2*Math.PI;
                 player.foot.theta = Math.min(player.foot.theta, 90);
+                if (player.side == Side.left){
+                    player.foot.thetadot = 2*Math.PI;
+                } else {
+                    player.foot.thetadot = -2*Math.PI;
+                }
             }
             if (!currentlyPressedKeys[player.keybinding.kick] && player.foot.theta > 0){
                 player.foot.theta-= 720*timestep;
-                player.foot.thetadot = -4*Math.PI;
                 player.foot.theta = Math.max(player.foot.theta, 0);
+                if (player.side == Side.left){
+                    player.foot.thetadot = -4*Math.PI;
+                } else {
+                    player.foot.thetadot = 4*Math.PI;
+                }
             }
-            if (!currentlyPressedKeys[player.keybinding.kick] && (player.foot.theta===0 || player.foot.theta===90)){
+            if (!currentlyPressedKeys[player.keybinding.kick] && (player.foot.theta===0) || 
+                (currentlyPressedKeys[player.keybinding.kick] && player.foot.theta===90)){
                 player.foot.thetadot = 0;
             }
 
@@ -133,6 +142,7 @@
             ball.velocity[1] > 0){
 
             ball.velocity[1] *= -0.8;
+            ball.position[1] = game.scenarioSize[1] - ball.size/2;
         }
         if (ball.position[1] < ball.size/2 &&
             ball.velocity[1] < 0){
@@ -194,7 +204,4 @@
     {/each}
     <Ball data={ball} />
 </div>
-<p>
-    {playerList[0].getFootPosition()}
-</p>
 
