@@ -74,10 +74,16 @@
 
             if (currentlyPressedKeys[player.keybinding.kick] && player.foot.theta < 90){
                 player.foot.theta += 360*timestep;
+                player.foot.thetadot = 2*Math.PI;
+                player.foot.theta = Math.min(player.foot.theta, 90);
             }
             if (!currentlyPressedKeys[player.keybinding.kick] && player.foot.theta > 0){
                 player.foot.theta-= 720*timestep;
+                player.foot.thetadot = -4*Math.PI;
                 player.foot.theta = Math.max(player.foot.theta, 0);
+            }
+            if (!currentlyPressedKeys[player.keybinding.kick] && (player.foot.theta===0 || player.foot.theta===90)){
+                player.foot.thetadot = 0;
             }
 
 

@@ -109,7 +109,6 @@ export class Character {
         }
 
 
-        let firstMove = [-this.foot.length/2, -this.foot.width/2];
         let moveToCharacterCenter = this.position;
         let moveToEdge = [
             (this.size/2-this.foot.width/2) * Math.sin(theta*Math.PI/180),
@@ -123,8 +122,8 @@ export class Character {
 
 
         return [
-            firstMove[0] + moveToCharacterCenter[0] + moveToEdge[0] + lastTouch[0],
-            firstMove[1] + moveToCharacterCenter[1] + moveToEdge[1] + lastTouch[1],
+            moveToCharacterCenter[0] + moveToEdge[0] + lastTouch[0],
+            moveToCharacterCenter[1] + moveToEdge[1] + lastTouch[1],
             -footAngle
     ]
 
@@ -168,39 +167,36 @@ export class Character {
 
         let normal1 : number[];
 
-        if (deltaX1[0] <= this.foot.rectLength && deltaX1[0] >= 0){
-            if (deltaX1[1] < (this.foot.width/2 + ball.size/2) && deltaX1[1] > 0){
+        if ((deltaX1[0] <= this.foot.rectLength/2) && (deltaX1[0] >= -this.foot.rectLength/2)){
+            if (deltaX1[1] <= (this.foot.width/2 + ball.size/2) && deltaX1[1] >= 0){
                 normal1 = [0, 1];
-            } else if (deltaX1[1] > -(this.foot.width/2 + ball.size/2) && deltaX1[1] < 0){
+            } else if (deltaX1[1] >= -(this.foot.width/2 + ball.size/2) && deltaX1[1] <= 0){
                 normal1 = [0, -1];
             } else {
                 return;
             }
             let footTouchPosition1 = [
                 (this.size/2-this.foot.width/2)*Math.sin(this.foot.alpha) + deltaX1[0],
-                (this.size/2-this.foot.width/2)*Math.sin(this.foot.alpha) + deltaX1[1]*normal1[1]
+                (this.size/2-this.foot.width/2)*Math.cos(this.foot.alpha) + deltaX1[1]*normal1[1]
             ];
 
-        let bodyVelocity1 = changeBase(this.velocity, footAngle);
+            let bodyVelocity1 = changeBase(this.velocity, footAngle);
 
-        let footVelocityAtPoint1 = [
-            footTouchPosition1[1] * this.foot.thetadot + bodyVelocity1[0],
-            -footTouchPosition1[0] * this.foot.thetadot + bodyVelocity1[1]
-        ];
+            let footVelocityAtPoint1 = [
+                footTouchPosition1[1] * this.foot.thetadot + bodyVelocity1[0],
+                -footTouchPosition1[0] * this.foot.thetadot + bodyVelocity1[1]
+            ];
 
-        let footNormalSpeed1 = footVelocityAtPoint1[1] * normal1[1];
-        let ballNormalSpeed1 = ballVelocity1[1] * normal1[1];
-        let collisionSpeed = footNormalSpeed1 - ballNormalSpeed1;
+            let footNormalSpeed1 = footVelocityAtPoint1[1] * normal1[1];
+            let ballNormalSpeed1 = ballVelocity1[1] * normal1[1];
+            let collisionSpeed = footNormalSpeed1 - ballNormalSpeed1;
 
-        if (collisionSpeed > 0){
-            let ballExtraSpeed = collisionSpeed * 2;
-            let normal0 = [
-                normal1[0] * Math.cos(footAngle*Math.PI/180) + normal1[1] * Math.sin(footAngle*Math.PI/180),
-                -normal1[0] * Math.sin(footAngle*Math.PI/180) + normal1[1] * Math.cos(footAngle*Math.PI/180)
-            ]
-            ball.velocity[0] += ballExtraSpeed*normal0[0];
-            ball.velocity[1] += ballExtraSpeed*normal0[1];
-        }
+            if (collisionSpeed > 0){
+                let ballExtraSpeed = collisionSpeed * 2;
+                let normal0 = changeBase(normal1, -footAngle);
+                ball.velocity[0] += ballExtraSpeed*normal0[0];
+                ball.velocity[1] += ballExtraSpeed*normal0[1];
+            }
 
         }
 
@@ -223,6 +219,6 @@ class Foot {
         this.alpha = 15;
         this.length = 200;
         this.width = 30;
-        this.rectLength = this.length - this.width;
+        this.rectLength = this.length;
     }
 }

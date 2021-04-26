@@ -15,6 +15,6 @@
 
 <div style="height: 30px;
             width: {player.foot.length}px;
-            transform:  translate({positionData[0]}px, {positionData[1]}px) rotate({positionData[2]}deg)">
+            transform: translate({positionData[0]}px, {positionData[1]}px)  translate(-50%,-50%) rotate({positionData[2]}deg)">
     
 </div>
