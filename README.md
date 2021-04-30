@@ -1,1 +1,1 @@
-Sportheads is back
+Sportheads is back, playable in Github Pages
