@@ -98,7 +98,9 @@
 
 
             player.position[0] += player.velocity[0] * timestep;
+            player.position[0] = Math.min(Math.max(player.position[0], player.size/2), game.scenarioSize[0] - player.size/2);
             player.position[1] += player.velocity[1] * timestep;
+
 
             player.velocity[1] += game.gravity * timestep;
 
