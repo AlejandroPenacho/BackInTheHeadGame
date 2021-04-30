@@ -1,5 +1,3 @@
-import { addEmitHelper, formatDiagnosticsWithColorAndContext } from "typescript";
-
 export interface Keybinding {
     left : string,
     right : string,
@@ -164,6 +162,7 @@ export class Character {
         let deltaX1 = changeBase(deltaX0, footAngle);
 
         let ballVelocity1 = changeBase(ball.velocity, footAngle);
+        let bodyVelocity1 = changeBase(this.velocity, footAngle);
 
         let normal1 : number[];
 
@@ -180,7 +179,7 @@ export class Character {
                 (this.size/2-this.foot.width/2)*Math.cos(this.foot.alpha) + deltaX1[1]*normal1[1]
             ];
 
-            let bodyVelocity1 = changeBase(this.velocity, footAngle);
+            
 
             let footVelocityAtPoint1 = [
                 footTouchPosition1[1] * this.foot.thetadot + bodyVelocity1[0],
@@ -197,9 +196,39 @@ export class Character {
                 ball.velocity[0] += ballExtraSpeed*normal0[0];
                 ball.velocity[1] += ballExtraSpeed*normal0[1];
             }
-
+            return
         }
 
+        let circleCenterX1 : number[];
+        if (Math.pow((deltaX1[0] - this.foot.rectLength/2),2) + Math.pow(deltaX1[1]-this.foot.width/2,2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)){
+            circleCenterX1 = [this.foot.rectLength/2, 0];
+        } else if (Math.pow((deltaX1[0] + this.foot.rectLength/2),2) + Math.pow(deltaX1[1]-this.foot.width/2,2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)) {
+            circleCenterX1 = [-this.foot.rectLength/2, 0];
+        } else {
+            return
+        }
+
+        let circleCenterX0 = changeBase(circleCenterX1, -footAngle);
+        circleCenterX0 = [circleCenterX0[0] + footX, circleCenterX0[1] + footY];
+        deltaX0 = [ball.position[0]-circleCenterX0[0], ball.position[1]-circleCenterX0[1]];
+        
+        let circleVelocity0 = [
+            this.foot.thetadot*(circleCenterX0[1]-this.position[1]) + this.velocity[0],
+            -this.foot.thetadot* (circleCenterX0[0]-this.position[0]) + this.velocity[1]
+        ]
+
+        let distance = Math.pow(Math.pow(deltaX0[0],2) + Math.pow(deltaX0[1],2), 0.5);
+
+        let normal0 = [deltaX0[0]/distance, deltaX0[1]/distance];
+
+        let deltaV0 = [ball.velocity[0] - circleVelocity0[0], ball.velocity[1] - circleVelocity0[1]];
+
+        let relativeSpeed = deltaV0[0]*normal0[0] + deltaV0[1]*normal0[1];
+        
+        if (relativeSpeed<0){
+            ball.velocity[0] -= 2*relativeSpeed*normal0[0];
+            ball.velocity[1] -= 2*relativeSpeed*normal0[1];
+        }
     }
 
 }
@@ -217,8 +246,8 @@ class Foot {
         this.theta = 0;
         this.thetadot = 0;
         this.alpha = 15;
-        this.length = 200;
+        this.length = 90;
         this.width = 30;
-        this.rectLength = this.length;
+        this.rectLength = this.length - this.width;
     }
 }

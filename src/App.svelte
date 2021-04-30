@@ -2,6 +2,7 @@
 
     import Player from "./Player.svelte";
     import Ball from "./Ball.svelte";
+    import Goal from "./Goal.svelte";
     import type {BallStruct} from "./basic/base";
     import {GameData, Character, Side} from "./basic/base";
 
@@ -193,9 +194,22 @@
         position: absolute;
         justify-content: center;
     }
+
+    div.control {
+        display: flex;
+        justify-content: space-between;
+        margin: auto;
+        width: 1000px;
+    }
+    div.controlBlock {
+        background-color: khaki;
+        padding: 20px;
+    }
 </style>
 
 <div class="mainScene">
+    <Goal side="right"/>
+    <Goal side="left"/>
     <div class="score">
         <p>{score[0]}-{score[1]}</p>
     </div>
@@ -205,3 +219,19 @@
     <Ball data={ball} />
 </div>
 
+<div class="control">
+    <div class="controlBlock">
+        <h5> Left player</h5>
+        <p>Left : z</p>
+        <p>Right: c</p>
+        <p>Jump: s</p>
+        <p>Kick: b</p>
+    </div>
+    <div class="controlBlock">
+        <h5> Right player</h5>
+        <p>Left : left arrow</p>
+        <p>Right: right arrow</p>
+        <p>Jump: up arrow</p>
+        <p>Kick: l</p>
+    </div>
+</div>
