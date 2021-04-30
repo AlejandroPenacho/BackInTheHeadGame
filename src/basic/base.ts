@@ -52,20 +52,46 @@ function changeBase(coord : number[], angle : number) : number[] {
 export class GameData {
     scenarioSize : number[];
     gravity: number;
-    jumpSpeed : number;
     nPlayers : number;
 
     constructor() {
         this.scenarioSize = [1000, 600],
         this.gravity = 900,
-        this.jumpSpeed = 600;
         this.nPlayers = 2;
+    }
+}
+
+export class BallClass {
+
+    position: number[];
+    velocity: number[];
+    size : number;
+    dragCoefficient: number;
+
+    constructor(){
+        this.position = [400, 400];
+        this.velocity = [100, -100];
+        this.size = 60;
+        this.dragCoefficient = 0.00003;
+    }
+
+
+    integrateTime(timestep : number, gravity : number){
+        this.position[0] += this.velocity[0] * timestep;
+        this.position[1] += this.velocity[1] * timestep;
+
+        this.velocity[1] += gravity * timestep;
+
+        this.velocity[0] -= this.dragCoefficient * this.velocity[0] * Math.abs(this.velocity[0]);
+        this.velocity[1] -= this.dragCoefficient * this.velocity[1] * Math.abs(this.velocity[1]);
     }
 }
 
 export class Character {
     position: number[];
     velocity: number[];
+    maxSpeed: number;
+    jumpSpeed: number;
     touchingGround : boolean;
     keybinding : Keybinding;
     foot : Foot;
@@ -89,6 +115,8 @@ export class Character {
         this.velocity = [0,0];
         this.touchingGround = false;
         this.size = 100;
+        this.maxSpeed = 200;
+        this.jumpSpeed = 600;
 
         this.foot = new Foot(side);
     }
@@ -229,6 +257,58 @@ export class Character {
             ball.velocity[0] -= 2*relativeSpeed*normal0[0];
             ball.velocity[1] -= 2*relativeSpeed*normal0[1];
         }
+    }
+
+    checkPressedKeys(currentlyPressedKeys){
+        if (currentlyPressedKeys[this.keybinding.right]) {
+            this.velocity[0] = this.maxSpeed;
+        }
+        if (currentlyPressedKeys[this.keybinding.left]) {
+            this.velocity[0] = -this.maxSpeed;
+        }
+        if (!currentlyPressedKeys[this.keybinding.right] && !currentlyPressedKeys[this.keybinding.left]){
+            this.velocity[0] = 0;
+        }
+
+        if (currentlyPressedKeys[this.keybinding.jump] && this.touchingGround) {
+            this.velocity[1] = -this.jumpSpeed;
+            this.touchingGround = false;
+        }
+
+        if (currentlyPressedKeys[this.keybinding.kick] && this.foot.theta < 90){
+            this.foot.theta = Math.min(this.foot.theta, 90);
+            if (this.side == Side.left){
+                this.foot.thetadot = 2*Math.PI;
+            } else {
+                this.foot.thetadot = -2*Math.PI;
+            }
+        }
+        if (!currentlyPressedKeys[this.keybinding.kick] && this.foot.theta > 0){
+            this.foot.theta = Math.max(this.foot.theta, 0);
+            if (this.side == Side.left){
+                this.foot.thetadot = -4*Math.PI;
+            } else {
+                this.foot.thetadot = 4*Math.PI;
+            }
+        }
+        if (!currentlyPressedKeys[this.keybinding.kick] && (this.foot.theta===0) || 
+            (currentlyPressedKeys[this.keybinding.kick] && this.foot.theta===90)){
+                this.foot.thetadot = 0;
+        }
+    }
+
+    integrateTime(timestep : number, gravity : number){
+        this.position[0] += this.velocity[0] * timestep;
+        this.position[1] += this.velocity[1] * timestep;
+
+        if (this.side == Side.left){
+            this.foot.theta += this.foot.thetadot * 180/Math.PI *  timestep;
+        } else {
+            this.foot.theta -= this.foot.thetadot * 180/Math.PI * timestep;
+        }
+
+        this.foot.theta = Math.min(Math.max(this.foot.theta, 0), 90);
+        this.velocity[1] += gravity * timestep;
     }
 
 }

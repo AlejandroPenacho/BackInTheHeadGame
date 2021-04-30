@@ -3,8 +3,7 @@
     import Player from "./Player.svelte";
     import Ball from "./Ball.svelte";
     import Goal from "./Goal.svelte";
-    import type {BallStruct} from "./basic/base";
-    import {GameData, Character, Side} from "./basic/base";
+    import {GameData, BallClass, Character, Side} from "./basic/base";
 
     let game = new GameData();
 
@@ -16,30 +15,35 @@
         new Character(Side.right)
     ];
 
-    let ball: BallStruct = {
-        position: [400, 400],
-        velocity: [100, -100],
-        size : 60,
-        dragCoefficient : 0.00003
-    }
+    let ball = new BallClass();
 
     let score = [0,0];
 
-    let playerSpeed = 200;
     let currentTime;
 
     let keyPressed;
 
     function processKeyDown(e: KeyboardEvent) {
+
+        if (e.repeat){ return }
+
         keyPressed = e.key;
         if (keyPressed !== "F12" && keyPressed !== "F5"){
             e.preventDefault();
         }
         currentlyPressedKeys[keyPressed] = true;
+
+        for (let i= 0; i<game.nPlayers; i++){
+            playerList[i].checkPressedKeys(currentlyPressedKeys);
+        }
     }
     function processKeyUp(e: KeyboardEvent) {
         let keyPressed = e.key;
         currentlyPressedKeys[keyPressed] = false;
+
+        for (let i= 0; i<game.nPlayers; i++){
+            playerList[i].checkPressedKeys(currentlyPressedKeys);
+        }
     }
 
     document.onkeydown = processKeyDown;
@@ -58,51 +62,9 @@
 
             let player = playerList[i];
 
-            if (currentlyPressedKeys[player.keybinding.right]) {
-                player.velocity[0] = playerSpeed;
-            }
-            if (currentlyPressedKeys[player.keybinding.left]) {
-                player.velocity[0] = -playerSpeed;
-            }
-            if (!currentlyPressedKeys[player.keybinding.right] && !currentlyPressedKeys[player.keybinding.left]){
-                player.velocity[0] = 0;
-            }
-
-            if (currentlyPressedKeys[player.keybinding.jump] && player.touchingGround) {
-                player.velocity[1] = -game.jumpSpeed;
-                player.touchingGround = false;
-            }
-
-            if (currentlyPressedKeys[player.keybinding.kick] && player.foot.theta < 90){
-                player.foot.theta += 360*timestep;
-                player.foot.theta = Math.min(player.foot.theta, 90);
-                if (player.side == Side.left){
-                    player.foot.thetadot = 2*Math.PI;
-                } else {
-                    player.foot.thetadot = -2*Math.PI;
-                }
-            }
-            if (!currentlyPressedKeys[player.keybinding.kick] && player.foot.theta > 0){
-                player.foot.theta-= 720*timestep;
-                player.foot.theta = Math.max(player.foot.theta, 0);
-                if (player.side == Side.left){
-                    player.foot.thetadot = -4*Math.PI;
-                } else {
-                    player.foot.thetadot = 4*Math.PI;
-                }
-            }
-            if (!currentlyPressedKeys[player.keybinding.kick] && (player.foot.theta===0) || 
-                (currentlyPressedKeys[player.keybinding.kick] && player.foot.theta===90)){
-                player.foot.thetadot = 0;
-            }
-
-
-            player.position[0] += player.velocity[0] * timestep;
+            player.integrateTime(timestep, game.gravity);
+            
             player.position[0] = Math.min(Math.max(player.position[0], player.size/2), game.scenarioSize[0] - player.size/2);
-            player.position[1] += player.velocity[1] * timestep;
-
-
-            player.velocity[1] += game.gravity * timestep;
 
             if  (player.position[1] >= (game.scenarioSize[1] - player.size/2) &&
                 (player.velocity[1] > 0)){
@@ -112,16 +74,12 @@
                     player.touchingGround = true;
             }
         }
+
         playerList = playerList;
 
+        ball.integrateTime(timestep, game.gravity);
 
-        ball.position[0] += ball.velocity[0] * timestep;
-        ball.position[1] += ball.velocity[1] * timestep;
 
-        ball.velocity[1] += game.gravity * timestep;
-
-        ball.velocity[0] -= ball.dragCoefficient * ball.velocity[0] * Math.abs(ball.velocity[0]);
-        ball.velocity[1] -= ball.dragCoefficient * ball.velocity[1] * Math.abs(ball.velocity[1]);
 
         if (ball.position[0] > game.scenarioSize[0]-ball.size/2 &&
             ball.velocity[0] > 0){
