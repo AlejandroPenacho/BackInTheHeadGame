@@ -182,16 +182,16 @@
 <div class="control">
     <div class="controlBlock">
         <h5> Left player</h5>
-        <p>Left : z</p>
-        <p>Right: c</p>
-        <p>Jump: s</p>
-        <p>Kick: b</p>
+        <p>Left : Z</p>
+        <p>Right: C</p>
+        <p>Jump: S</p>
+        <p>Kick: B</p>
     </div>
     <div class="controlBlock">
         <h5> Right player</h5>
         <p>Left : left arrow</p>
         <p>Right: right arrow</p>
         <p>Jump: up arrow</p>
-        <p>Kick: l</p>
+        <p>Kick: L</p>
     </div>
 </div>
