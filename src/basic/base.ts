@@ -200,9 +200,9 @@ export class Character {
         }
 
         let circleCenterX1 : number[];
-        if (Math.pow((deltaX1[0] - this.foot.rectLength/2),2) + Math.pow(deltaX1[1]-this.foot.width/2,2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)){
+        if (Math.pow((deltaX1[0] - this.foot.rectLength/2),2) + Math.pow(deltaX1[1],2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)){
             circleCenterX1 = [this.foot.rectLength/2, 0];
-        } else if (Math.pow((deltaX1[0] + this.foot.rectLength/2),2) + Math.pow(deltaX1[1]-this.foot.width/2,2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)) {
+        } else if (Math.pow((deltaX1[0] + this.foot.rectLength/2),2) + Math.pow(deltaX1[1],2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)) {
             circleCenterX1 = [-this.foot.rectLength/2, 0];
         } else {
             return
