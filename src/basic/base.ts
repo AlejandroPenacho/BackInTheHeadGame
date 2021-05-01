@@ -17,7 +17,7 @@ export enum Side {
 }
 
 
-let standardPlayerConfig = {
+export let standardPlayerConfig = {
     left : {
         color : "orange",
         position : [200,500],

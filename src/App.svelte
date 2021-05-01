@@ -3,7 +3,9 @@
     import Player from "./Player.svelte";
     import Ball from "./Ball.svelte";
     import Goal from "./Goal.svelte";
-    import {GameData, BallClass, Character, Side} from "./basic/base";
+    import Keybind from "./Keybind.svelte";
+
+    import {GameData, BallClass, Character, Side, standardPlayerConfig} from "./basic/base";
 
     let game = new GameData();
 
@@ -20,15 +22,16 @@
     let score = [0,0];
 
     let currentTime;
-
     let keyPressed;
+
+    let activeElement: string = "scene";
 
     function processKeyDown(e: KeyboardEvent) {
 
         if (e.repeat){ return }
 
         keyPressed = e.key;
-        if (keyPressed !== "F12" && keyPressed !== "F5"){
+        if (keyPressed !== "F12" && keyPressed !== "F5" && activeElement === "scene"){
             e.preventDefault();
         }
         currentlyPressedKeys[keyPressed] = true;
@@ -44,6 +47,9 @@
         for (let i= 0; i<game.nPlayers; i++){
             playerList[i].checkPressedKeys(currentlyPressedKeys);
         }
+    }
+    function clickFunction(element) {
+        return () => {activeElement = element}
     }
 
     document.onkeydown = processKeyDown;
@@ -161,13 +167,9 @@
         margin: auto;
         width: 1000px;
     }
-    div.controlBlock {
-        background-color: khaki;
-        padding: 20px;
-    }
 </style>
 
-<div class="mainScene">
+<div class="mainScene" on:click={clickFunction("scene")}>
     <Goal side="right"/>
     <Goal side="left"/>
     <div class="score">
@@ -179,19 +181,7 @@
     <Ball data={ball} />
 </div>
 
-<div class="control">
-    <div class="controlBlock">
-        <h5> Left player</h5>
-        <p>Left : Z</p>
-        <p>Right: C</p>
-        <p>Jump: S</p>
-        <p>Kick: B</p>
-    </div>
-    <div class="controlBlock">
-        <h5> Right player</h5>
-        <p>Left : left arrow</p>
-        <p>Right: right arrow</p>
-        <p>Jump: up arrow</p>
-        <p>Kick: L</p>
-    </div>
+<div class="control" on:click={clickFunction("control")}>
+    <Keybind defaultKey={standardPlayerConfig.left.keybinding} bind:key={playerList[0].keybinding}/>
+    <Keybind defaultKey={standardPlayerConfig.right.keybinding} bind:key={playerList[1].keybinding}/>
 </div>
