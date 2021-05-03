@@ -28,7 +28,10 @@
 
     function processKeyDown(e: KeyboardEvent) {
 
-        if (e.repeat){ return }
+        if (e.repeat){ 
+            e.preventDefault();
+            return 
+        }
 
         keyPressed = e.key;
         if (keyPressed !== "F12" && keyPressed !== "F5" && activeElement === "scene"){
@@ -64,6 +67,8 @@
         let timestep = (timeStamp - currentTime)/1000;
         currentTime = timeStamp;
 
+        
+
         for (let i= 0; i<game.nPlayers; i++){
 
             let player = playerList[i];
@@ -80,6 +85,8 @@
                     player.touchingGround = true;
             }
         }
+
+        playerList[0].computeCharacterCollision(playerList[1]);
 
         playerList = playerList;
 
@@ -108,7 +115,13 @@
         if (ball.position[1] > game.scenarioSize[1]-ball.size/2 &&
             ball.velocity[1] > 0){
 
-            ball.velocity[1] *= -0.8;
+            if (ball.velocity[1] < 150) {
+                ball.velocity[1]=0
+            } else {
+                ball.velocity[1] *= -0.8;
+            }
+            
+            
             ball.position[1] = game.scenarioSize[1] - ball.size/2;
         }
         if (ball.position[1] < ball.size/2 &&
@@ -129,7 +142,7 @@
     function detectCollisions() {
         for (let i=0; i<game.nPlayers; i++){
             let player = playerList[i];
-            player.computeCollision(ball);
+            player.computeBallCollision(ball);
         }
     }
 

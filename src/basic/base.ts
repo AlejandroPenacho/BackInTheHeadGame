@@ -4,12 +4,6 @@ export interface Keybinding {
     jump : string,
     kick : string
 }
-export interface BallStruct {
-    position: number[],
-    velocity: number[],
-    size : number,
-    dragCoefficient: number
-}
 
 export enum Side {
     left,
@@ -71,7 +65,7 @@ export class BallClass {
     constructor(){
         this.position = [400, 400];
         this.velocity = [100, -100];
-        this.size = 60;
+        this.size = 50;
         this.dragCoefficient = 0.00003;
     }
 
@@ -90,6 +84,7 @@ export class BallClass {
 export class Character {
     position: number[];
     velocity: number[];
+    desiredVelocity: number;
     maxSpeed: number;
     jumpSpeed: number;
     touchingGround : boolean;
@@ -113,8 +108,9 @@ export class Character {
 
         this.side = side;
         this.velocity = [0,0];
+        this.desiredVelocity = 0;
         this.touchingGround = false;
-        this.size = 100;
+        this.size = 70;
         this.maxSpeed = 200;
         this.jumpSpeed = 600;
 
@@ -155,12 +151,12 @@ export class Character {
 
     }
 
-    computeCollision(ball: BallStruct){
+    computeBallCollision(ball: BallClass){
         this.computeHeadCollision(ball);
         this.computeFootCollision(ball);
     }
 
-    computeHeadCollision(ball: BallStruct){
+    computeHeadCollision(ball: BallClass){
         let deltaX = ball.position[0] - this.position[0];
         let deltaY = ball.position[1] - this.position[1];
         let deltaVX = ball.velocity[0] - this.velocity[0];
@@ -180,7 +176,7 @@ export class Character {
         }
     }
 
-    computeFootCollision(ball: BallStruct){
+    computeFootCollision(ball: BallClass){
         let [footX, footY, footAngle] = this.getFootPosition();
 
         footAngle = -footAngle;
@@ -195,6 +191,7 @@ export class Character {
         let normal1 : number[];
 
         if ((deltaX1[0] <= this.foot.rectLength/2) && (deltaX1[0] >= -this.foot.rectLength/2)){
+
             if (deltaX1[1] <= (this.foot.width/2 + ball.size/2) && deltaX1[1] >= 0){
                 normal1 = [0, 1];
             } else if (deltaX1[1] >= -(this.foot.width/2 + ball.size/2) && deltaX1[1] <= 0){
@@ -259,15 +256,53 @@ export class Character {
         }
     }
 
+    computeCharacterCollision(other: Character){
+        let deltaX : number[] = [
+            other.position[0] - this.position[0],
+            other.position[1] - this.position[1]
+        ];
+        let distance = Math.pow(Math.pow(deltaX[0],2) + Math.pow(deltaX[1],2), 0.5);
+
+        if (distance > (this.size/2 + other.size/2)){return}
+
+        let normalVector = [deltaX[0]/distance, deltaX[1]/distance];
+
+        if (normalVector[1] < 0){
+            other.touchingGround = true;
+            setTimeout(()=>{other.touchingGround=false}, 200)
+        } else if (normalVector[1] > 0){
+            this.touchingGround = true;
+            setTimeout(()=>{this.touchingGround=false}, 200)
+        }
+
+        let relativeVelocity = [
+            other.velocity[0] - this.velocity[0],
+            other.velocity[1] - this.velocity[1]
+        ];
+        let relativeNormalSpeed = relativeVelocity[0]*normalVector[0] + relativeVelocity[1]*normalVector[1];
+
+        if (relativeNormalSpeed >= 0){return}
+
+        this.velocity[0] += relativeNormalSpeed*normalVector[0];
+        this.velocity[1] += relativeNormalSpeed*normalVector[1];
+        other.velocity[0] -= relativeNormalSpeed*normalVector[0];
+        other.velocity[1] -= relativeNormalSpeed*normalVector[1];
+
+    }
+
     checkPressedKeys(currentlyPressedKeys){
+
         if (currentlyPressedKeys[this.keybinding.right]) {
             this.velocity[0] = this.maxSpeed;
+            this.desiredVelocity = this.maxSpeed;
         }
         if (currentlyPressedKeys[this.keybinding.left]) {
             this.velocity[0] = -this.maxSpeed;
+            this.desiredVelocity = -this.maxSpeed;
         }
         if (!currentlyPressedKeys[this.keybinding.right] && !currentlyPressedKeys[this.keybinding.left]){
             this.velocity[0] = 0;
+            this.desiredVelocity = 0;
         }
 
         if (currentlyPressedKeys[this.keybinding.jump] && this.touchingGround) {
@@ -309,6 +344,10 @@ export class Character {
 
         this.foot.theta = Math.min(Math.max(this.foot.theta, 0), 90);
         this.velocity[1] += gravity * timestep;
+      if (this.desiredVelocity!==this.velocity[0] && this.touchingGround){
+          this.velocity[0] *=0.6;
+      }
+        
     }
 
 }
@@ -326,7 +365,7 @@ class Foot {
         this.theta = 0;
         this.thetadot = 0;
         this.alpha = 15;
-        this.length = 90;
+        this.length = 80;
         this.width = 30;
         this.rectLength = this.length - this.width;
     }

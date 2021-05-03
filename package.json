@@ -4,7 +4,7 @@
   "description": "Flash's dead, but sportheads is forever",
   "main": "server.js",
   "scripts": {
-    "test": "webpack && node server.js"
+    "start": "webpack && node server.js"
   },
   "keywords": [
     "sportheads",
