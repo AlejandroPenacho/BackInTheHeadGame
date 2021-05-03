@@ -370,3 +370,30 @@ class Foot {
         this.rectLength = this.length - this.width;
     }
 }
+
+export class GoalClass {
+    width: number;
+    height: number;
+    side: Side;
+    barWidth: number;
+    position: number[];
+
+    constructor(game: GameData, side: Side){
+        this.width = 80;
+        this.height = 200;
+        this.barWidth = 20;
+        this.side = side;
+        if (side === Side.left){
+            this.position = [
+                this.width/2,
+                game.scenarioSize[1] - this.height/2
+            ]
+        } else {
+            this.position = [
+                game.scenarioSize[0] - this.width/2,
+                game.scenarioSize[1] - this.height/2
+            ]           
+        }
+    }
+
+}

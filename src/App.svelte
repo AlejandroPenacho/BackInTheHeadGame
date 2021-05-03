@@ -5,7 +5,7 @@
     import Goal from "./Goal.svelte";
     import Keybind from "./Keybind.svelte";
 
-    import {GameData, BallClass, Character, Side, standardPlayerConfig} from "./basic/base";
+    import {GameData, BallClass, Character, Side, standardPlayerConfig, GoalClass} from "./basic/base";
 
     let game = new GameData();
 
@@ -16,6 +16,11 @@
         new Character(Side.left),
         new Character(Side.right)
     ];
+
+    let goalList : GoalClass[] = [
+        new GoalClass(game, Side.left),
+        new GoalClass(game, Side.right)
+    ]
 
     let ball = new BallClass();
 
@@ -94,26 +99,13 @@
 
 
 
-        if (ball.position[0] > game.scenarioSize[0]-ball.size/2 &&
-            ball.velocity[0] > 0){
-
-                if (ball.position[1] > 400){
-                    score = [score[0]+1 , score[1]];
-                }
-
+        if (ball.position[0] > game.scenarioSize[0]-ball.size/2 && ball.velocity[0] > 0){
             ball.velocity[0] *= -1;
         }
-        if (ball.position[0] < ball.size/2 &&
-            ball.velocity[0] < 0){
-
-                if (ball.position[1] > 400){
-                    score = [score[0], score[1] +1];
-                }
-
+        if (ball.position[0] < ball.size/2 && ball.velocity[0] < 0){
             ball.velocity[0] *= -1;
         }
-        if (ball.position[1] > game.scenarioSize[1]-ball.size/2 &&
-            ball.velocity[1] > 0){
+        if (ball.position[1] > game.scenarioSize[1]-ball.size/2 && ball.velocity[1] > 0){
 
             if (ball.velocity[1] < 150) {
                 ball.velocity[1]=0
@@ -128,8 +120,18 @@
             ball.velocity[1] < 0){
 
             ball.velocity[1] *= -1;
-        }        
-
+        }
+        
+        if (ball.position[0] < (goalList[0].position[0] + goalList[0].width/2) && ball.position[1] > (goalList[0].position[1]-goalList[0].height/2)){
+            ball.velocity = [0, 0];
+            ball.position = [400, 400];
+            score[1] += 1;
+        }
+        if (ball.position[0] > (goalList[1].position[0] - goalList[1].width/2) && ball.position[1] > (goalList[1].position[1]-goalList[1].height/2)){
+            ball.velocity = [0, 0];
+            ball.position = [400, 400];
+            score[0] += 1;
+        }
 
         detectCollisions();
         ball = ball;
@@ -183,8 +185,8 @@
 </style>
 
 <div class="mainScene" on:click={clickFunction("scene")}>
-    <Goal side="right"/>
-    <Goal side="left"/>
+    <Goal data={goalList[0]}/>
+    <Goal data={goalList[1]}/>
     <div class="score">
         <p>{score[0]}-{score[1]}</p>
     </div>

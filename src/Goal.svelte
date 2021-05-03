@@ -1,16 +1,18 @@
 <script lang="ts">
-    export let side;
+import { GoalClass, Side } from "./basic/base";
+
+
+    export let data : GoalClass;
 
     let xTranslate : number;
     let border : string;
     let xBarTranslate: number;
 
-    if (side=="left"){
+    if (data.side == Side.left){
         xTranslate = 0;
         border = "0px 10px 10px 0px";
         xBarTranslate = 0;
-    } else if (side=="right"){
-        xTranslate = 1000-80;
+    } else {
         border = "10px 0px 0px 10px";
         xBarTranslate = -10;
     }
@@ -31,9 +33,12 @@
     }
 </style>
 
-<div class="interior" style="height: 200px; width: 80px;
-            transform: translate({xTranslate}px, 400px)">
-    <div class="high-bar" style="border-radius: {border}; transform: translate({xBarTranslate}px, 0px)">
+<div class="interior" 
+    style="height: {data.height}px; 
+        width: {data.width}px;
+        transform: translate({data.position[0]}px, {data.position[1]}px) translate(-50%, -50%)">
+        
+        <div class="high-bar" style="border-radius: {border}; transform: translate({xBarTranslate}px, 0px)">
 
-    </div>
+        </div>
 </div>
