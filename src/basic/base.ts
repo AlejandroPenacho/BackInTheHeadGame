@@ -63,8 +63,8 @@ export class BallClass {
     dragCoefficient: number;
 
     constructor(){
-        this.position = [400, 400];
-        this.velocity = [100, -100];
+        this.position = [500, 200];
+        this.velocity = [0, 0];
         this.size = 50;
         this.dragCoefficient = 0.00003;
     }

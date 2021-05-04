@@ -132,7 +132,7 @@
             score[1] += 1;
             setTimeout(()=>{
                 ball.velocity = [0, 0];
-                ball.position = [400, 400];
+                ball.position = [game.scenarioSize[0]/2, 200];
                 recentGoal = false;
             }, 500)
         }
@@ -144,7 +144,7 @@
             score[0] += 1;
             setTimeout(()=>{
                 ball.velocity = [0, 0];
-                ball.position = [400, 400];
+                ball.position = [game.scenarioSize[0]/2, 200];
                 recentGoal = false;
             }, 500)
         }
