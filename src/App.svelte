@@ -25,6 +25,7 @@
     let ball = new BallClass();
 
     let score = [0,0];
+    let recentGoal = false;
 
     let currentTime;
     let keyPressed;
@@ -122,15 +123,30 @@
             ball.velocity[1] *= -1;
         }
         
-        if (ball.position[0] < (goalList[0].position[0] + goalList[0].width/2) && ball.position[1] > (goalList[0].position[1]-goalList[0].height/2)){
-            ball.velocity = [0, 0];
-            ball.position = [400, 400];
+        if (ball.position[0] < (goalList[0].position[0] + goalList[0].width/2) && 
+            ball.position[1] > (goalList[0].position[1]-goalList[0].height/2) &&
+            !recentGoal){
+
+            recentGoal = true;
+            
             score[1] += 1;
+            setTimeout(()=>{
+                ball.velocity = [0, 0];
+                ball.position = [400, 400];
+                recentGoal = false;
+            }, 500)
         }
-        if (ball.position[0] > (goalList[1].position[0] - goalList[1].width/2) && ball.position[1] > (goalList[1].position[1]-goalList[1].height/2)){
-            ball.velocity = [0, 0];
-            ball.position = [400, 400];
+        if (ball.position[0] > (goalList[1].position[0] - goalList[1].width/2) &&
+            ball.position[1] > (goalList[1].position[1]-goalList[1].height/2) &&
+            !recentGoal){
+
+            recentGoal = true;
             score[0] += 1;
+            setTimeout(()=>{
+                ball.velocity = [0, 0];
+                ball.position = [400, 400];
+                recentGoal = false;
+            }, 500)
         }
 
         detectCollisions();
@@ -145,6 +161,15 @@
         for (let i=0; i<game.nPlayers; i++){
             let player = playerList[i];
             player.computeBallCollision(ball);
+        }
+        for (let i=0; i<2; i++){
+            let goal = goalList[i];
+            goal.computeCircleCollision(ball);
+
+            for (let j=0; j<game.nPlayers; j++){
+                let player = playerList[j];
+                goal.computeCircleCollision(player);
+            }            
         }
     }
 

@@ -345,7 +345,15 @@ export class Character {
         this.foot.theta = Math.min(Math.max(this.foot.theta, 0), 90);
         this.velocity[1] += gravity * timestep;
       if (this.desiredVelocity!==this.velocity[0] && this.touchingGround){
-          this.velocity[0] *=0.6;
+          
+        if (this.desiredVelocity === 0){
+            this.velocity[0] *=0.6;
+        } else {
+            this.velocity[0] = this.desiredVelocity;
+        }
+            
+
+
       }
         
     }
@@ -394,6 +402,62 @@ export class GoalClass {
                 game.scenarioSize[1] - this.height/2
             ]           
         }
+    }
+
+    computeCircleCollision(circle){
+
+        let barCenter: number[];
+        let barLength: number;
+        let cornerCenter: number[];
+        let cornerRadius: number;
+
+        barLength = this.width;
+        cornerRadius = this.width/2;
+        barCenter = [this.position[0], this.position[1] - this.height/2 + this.barWidth/2];
+
+        if (this.side === Side.left){
+            cornerCenter = [
+                this.position[0]+this.width/2,
+                barCenter[1]
+            ];
+        } else {
+            cornerCenter = [
+                this.position[0]-this.width/2,
+                barCenter[1]
+            ];            
+        }
+
+        let deltaY = circle.position[1] - barCenter[1];
+
+        if (circle.position[0] <= barCenter[0]+barLength/2 && 
+            circle.position[0] >= barCenter[0]-barLength/2){
+
+                if (Math.abs(deltaY) > circle.size/2 + this.barWidth/2){
+                    return
+                }
+                if (circle.velocity[1] * deltaY >= 0){
+                    return
+                }
+
+            circle.velocity[1] *= -1;
+            return
+        }
+
+        let deltaX = circle.position[0] - cornerCenter[0];
+
+        let distance = Math.pow(Math.pow(deltaX,2) + Math.pow(deltaY,2), 0.5);
+
+        if (distance > (circle.size/2 + this.barWidth/2)) {return};
+
+        let normal = [deltaX/distance, deltaY/distance];
+
+        let relativeSpeed = circle.velocity[0]*normal[0] + circle.velocity[1]*normal[1];
+
+        if (relativeSpeed < 0){
+            circle.velocity[0] -= 2*relativeSpeed*normal[0];
+            circle.velocity[1] -= 2*relativeSpeed*normal[1];
+        }
+        
     }
 
 }

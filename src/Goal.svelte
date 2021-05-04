@@ -27,8 +27,6 @@ import { GoalClass, Side } from "./basic/base";
     }
     div.high-bar {
         background-color: darkred;
-        height: 20px;
-        width: 90px;
         position: absolute;
     }
 </style>
@@ -38,7 +36,11 @@ import { GoalClass, Side } from "./basic/base";
         width: {data.width}px;
         transform: translate({data.position[0]}px, {data.position[1]}px) translate(-50%, -50%)">
         
-        <div class="high-bar" style="border-radius: {border}; transform: translate({xBarTranslate}px, 0px)">
+        <div class="high-bar"
+             style="border-radius: {border}; 
+                    transform: translate({xBarTranslate}px, 0px);
+                    height: {data.barWidth}px;
+                    width: {data.width+data.barWidth/2}px">
 
         </div>
 </div>
