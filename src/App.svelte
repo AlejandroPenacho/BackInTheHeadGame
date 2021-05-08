@@ -162,15 +162,15 @@
             let player = playerList[i];
             player.computeBallCollision(ball);
         }
-        for (let i=0; i<2; i++){
-            let goal = goalList[i];
-            goal.computeCircleCollision(ball);
-
-            for (let j=0; j<game.nPlayers; j++){
-                let player = playerList[j];
-                goal.computeCircleCollision(player);
-            }            
-        }
+//        for (let i=0; i<2; i++){
+//            let goal = goalList[i];
+//            goal.computeCircleCollision(ball);
+//
+//            for (let j=0; j<game.nPlayers; j++){
+//                let player = playerList[j];
+//                goal.computeCircleCollision(player);
+//            }            
+//        }
     }
 
     ball = ball;

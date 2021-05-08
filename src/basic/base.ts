@@ -1,3 +1,5 @@
+import {ColliderElement, CircleCollider, RectangleCollider, computeCollision} from "./collision";
+
 export interface Keybinding {
     left : string,
     right : string,
@@ -61,12 +63,22 @@ export class BallClass {
     velocity: number[];
     size : number;
     dragCoefficient: number;
+    collisionElements: ColliderElement[];
 
     constructor(){
         this.position = [500, 200];
         this.velocity = [0, 0];
         this.size = 50;
         this.dragCoefficient = 0.00003;
+        this.collisionElements = [
+            new CircleCollider(
+                () => {return this.position},
+                () => {return this.velocity},
+                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
+                () => {return this.size/2},
+                2
+            )
+        ]
     }
 
 
@@ -93,6 +105,7 @@ export class Character {
     color : string;
     size : number;
     side: Side;
+    collisionElements : ColliderElement[];
 
     constructor(side : Side) {
 
@@ -115,6 +128,26 @@ export class Character {
         this.jumpSpeed = 600;
 
         this.foot = new Foot(side);
+
+        this.collisionElements = [
+            new CircleCollider(
+                () => {return this.position},
+                () => {return this.velocity},
+                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
+                () => {return this.size/2},
+                1
+            ),
+            new RectangleCollider(
+                () => {return this.getFootPosition()},
+                () => {return this.velocity},
+                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
+                () => {return this.foot.rectLength},
+                () => {return this.foot.width},
+                () => {return this.getFootAngle()},
+                () => {return this.foot.thetadot},
+                1
+            )      
+        ]
     }
 
     getFootPosition() : number[] {
@@ -122,14 +155,8 @@ export class Character {
         let footAngle;
         let theta;
 
-        if (this.side === Side.left){
-            footAngle = this.foot.theta - this.foot.alpha;
-            theta = this.foot.theta;
-        } else {
-            footAngle = -this.foot.theta + this.foot.alpha + 180;
-            theta = -this.foot.theta;
-        }
-
+        footAngle = this.getFootAngle();
+        theta = this.foot.theta;
 
         let moveToCharacterCenter = this.position;
         let moveToEdge = [
@@ -146,34 +173,17 @@ export class Character {
         return [
             moveToCharacterCenter[0] + moveToEdge[0] + lastTouch[0],
             moveToCharacterCenter[1] + moveToEdge[1] + lastTouch[1],
-            -footAngle
     ]
+    }
 
+    getFootAngle(){
+        return this.foot.theta - this.foot.alpha;
     }
 
     computeBallCollision(ball: BallClass){
-        this.computeHeadCollision(ball);
-        this.computeFootCollision(ball);
-    }
-
-    computeHeadCollision(ball: BallClass){
-        let deltaX = ball.position[0] - this.position[0];
-        let deltaY = ball.position[1] - this.position[1];
-        let deltaVX = ball.velocity[0] - this.velocity[0];
-        let deltaVY = ball.velocity[1] - this.velocity[1];
-
-        let normalVector = [deltaX, deltaY];
-        let distance = Math.pow(Math.pow(deltaX,2)+Math.pow(deltaY,2),0.5);
-
-        let collisionSpeed = (deltaVX*normalVector[0] + deltaVY*normalVector[1])/(distance);
-        
-
-        if (distance <= (this.size/2 + ball.size/2)){
-            if (collisionSpeed < 0){
-                ball.velocity[0] -= 2*collisionSpeed*normalVector[0]/distance;
-                ball.velocity[1] -= 2*collisionSpeed*normalVector[1]/distance;
-            }
-        }
+        // computeCollision(this.collisionElements[0], ball.collisionElements[0])
+        computeCollision(this.collisionElements[1], ball.collisionElements[0]);
+     //   this.computeFootCollision(ball);
     }
 
     computeFootCollision(ball: BallClass){
@@ -372,7 +382,7 @@ class Foot {
     constructor(side) {
         this.theta = 0;
         this.thetadot = 0;
-        this.alpha = 15;
+        this.alpha = 0;
         this.length = 80;
         this.width = 30;
         this.rectLength = this.length - this.width;
