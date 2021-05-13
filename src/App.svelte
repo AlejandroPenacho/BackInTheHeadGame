@@ -6,6 +6,7 @@
     import Keybind from "./Keybind.svelte";
 
     import {GameData, BallClass, Character, Side, standardPlayerConfig, GoalClass} from "./basic/base";
+    import { computeObjectCollision } from "./basic/collision";
 
     let game = new GameData();
 
@@ -92,8 +93,6 @@
             }
         }
 
-        playerList[0].computeCharacterCollision(playerList[1]);
-
         playerList = playerList;
 
         ball.integrateTime(timestep, game.gravity);
@@ -158,10 +157,27 @@
 
 
     function detectCollisions() {
-        for (let i=0; i<game.nPlayers; i++){
-            let player = playerList[i];
-            player.computeBallCollision(ball);
+
+        for (let index1=0; index1 < 2; index1++){
+
+            computeObjectCollision(playerList[index1], ball);
+            computeObjectCollision(goalList[index1], ball);
+
+            for (let index2=0; index2 < 2; index2++){
+                computeObjectCollision(playerList[index1], goalList[index2])
+
+                if (index1 !== index2){
+                    computeObjectCollision(playerList[index1], playerList[index2])
+                }
+            }
+
         }
+        
+
+//        for (let i=0; i<game.nPlayers; i++){
+//            let player = playerList[i];
+//            player.computeBallCollision(ball);
+//        }
 //        for (let i=0; i<2; i++){
 //            let goal = goalList[i];
 //            goal.computeCircleCollision(ball);

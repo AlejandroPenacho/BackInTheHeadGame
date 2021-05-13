@@ -78,7 +78,16 @@ function distributeMomentum(A, B, deltaVelocity){
 }
 
 
-export function computeCollision(A : ColliderElement, B : ColliderElement){
+export function computeObjectCollision(A: any, B: any){
+    for (let i=0; i<A.collisionElements.length; i++){
+        for (let j=0; j<B.collisionElements.length; j++){
+            computeElementCollision(A.collisionElements[i], B.collisionElements[j]);
+        }       
+    }
+}
+
+
+function computeElementCollision(A : ColliderElement, B : ColliderElement){
 
         if (A.type === ColliderElementType.Circle && B.type === ColliderElementType.Circle){
             computeCircle2CircleCollision(A as CircleCollider, B as CircleCollider);

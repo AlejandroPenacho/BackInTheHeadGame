@@ -26,7 +26,7 @@ import { GoalClass, Side } from "./basic/base";
         position: absolute;
     }
     div.high-bar {
-        background-color: darkred;
+        background-color: rgb(139, 0, 0);
         position: absolute;
     }
 </style>

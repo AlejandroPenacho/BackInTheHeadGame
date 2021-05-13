@@ -1,4 +1,5 @@
-import {ColliderElement, CircleCollider, RectangleCollider, computeCollision} from "./collision";
+import { couldStartTrivia } from "typescript";
+import {ColliderElement, CircleCollider, RectangleCollider} from "./collision";
 
 export interface Keybinding {
     left : string,
@@ -146,7 +147,14 @@ export class Character {
                 () => {return this.getFootAngle()},
                 () => {return this.foot.thetadot},
                 1
-            )      
+            ),
+            new CircleCollider(
+                () => {return this.getTipCenter()},
+                () => {return this.getTipVelocity()},
+                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
+                () => {return this.foot.width/2},
+                1
+            )               
         ]
     }
 
@@ -173,131 +181,29 @@ export class Character {
         return [
             moveToCharacterCenter[0] + moveToEdge[0] + lastTouch[0],
             moveToCharacterCenter[1] + moveToEdge[1] + lastTouch[1],
-    ]
+        ]
     }
 
     getFootAngle(){
         return this.foot.theta - this.foot.alpha;
     }
 
-    computeBallCollision(ball: BallClass){
-        // computeCollision(this.collisionElements[0], ball.collisionElements[0])
-        computeCollision(this.collisionElements[1], ball.collisionElements[0]);
-     //   this.computeFootCollision(ball);
-    }
+    getTipCenter(){
+        let footCenter = this.getFootPosition();
+        let footAngle = this.getFootAngle();
 
-    computeFootCollision(ball: BallClass){
-        let [footX, footY, footAngle] = this.getFootPosition();
-
-        footAngle = -footAngle;
-
-        let deltaX0 = [ball.position[0] - footX, ball.position[1] - footY];
-
-        let deltaX1 = changeBase(deltaX0, footAngle);
-
-        let ballVelocity1 = changeBase(ball.velocity, footAngle);
-        let bodyVelocity1 = changeBase(this.velocity, footAngle);
-
-        let normal1 : number[];
-
-        if ((deltaX1[0] <= this.foot.rectLength/2) && (deltaX1[0] >= -this.foot.rectLength/2)){
-
-            if (deltaX1[1] <= (this.foot.width/2 + ball.size/2) && deltaX1[1] >= 0){
-                normal1 = [0, 1];
-            } else if (deltaX1[1] >= -(this.foot.width/2 + ball.size/2) && deltaX1[1] <= 0){
-                normal1 = [0, -1];
-            } else {
-                return;
-            }
-            let footTouchPosition1 = [
-                (this.size/2-this.foot.width/2)*Math.sin(this.foot.alpha) + deltaX1[0],
-                (this.size/2-this.foot.width/2)*Math.cos(this.foot.alpha) + deltaX1[1]*normal1[1]
-            ];
-
-            
-
-            let footVelocityAtPoint1 = [
-                footTouchPosition1[1] * this.foot.thetadot + bodyVelocity1[0],
-                -footTouchPosition1[0] * this.foot.thetadot + bodyVelocity1[1]
-            ];
-
-            let footNormalSpeed1 = footVelocityAtPoint1[1] * normal1[1];
-            let ballNormalSpeed1 = ballVelocity1[1] * normal1[1];
-            let collisionSpeed = footNormalSpeed1 - ballNormalSpeed1;
-
-            if (collisionSpeed > 0){
-                let ballExtraSpeed = collisionSpeed * 2;
-                let normal0 = changeBase(normal1, -footAngle);
-                ball.velocity[0] += ballExtraSpeed*normal0[0];
-                ball.velocity[1] += ballExtraSpeed*normal0[1];
-            }
-            return
-        }
-
-        let circleCenterX1 : number[];
-        if (Math.pow((deltaX1[0] - this.foot.rectLength/2),2) + Math.pow(deltaX1[1],2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)){
-            circleCenterX1 = [this.foot.rectLength/2, 0];
-        } else if (Math.pow((deltaX1[0] + this.foot.rectLength/2),2) + Math.pow(deltaX1[1],2) <= Math.pow(this.foot.width/2 + ball.size/2, 2)) {
-            circleCenterX1 = [-this.foot.rectLength/2, 0];
-        } else {
-            return
-        }
-
-        let circleCenterX0 = changeBase(circleCenterX1, -footAngle);
-        circleCenterX0 = [circleCenterX0[0] + footX, circleCenterX0[1] + footY];
-        deltaX0 = [ball.position[0]-circleCenterX0[0], ball.position[1]-circleCenterX0[1]];
-        
-        let circleVelocity0 = [
-            this.foot.thetadot*(circleCenterX0[1]-this.position[1]) + this.velocity[0],
-            -this.foot.thetadot* (circleCenterX0[0]-this.position[0]) + this.velocity[1]
+        return [
+            footCenter[0] + this.foot.rectLength/2 * Math.cos(footAngle*Math.PI/180),
+            footCenter[1] - this.foot.rectLength/2 * Math.sin(footAngle*Math.PI/180)
         ]
-
-        let distance = Math.pow(Math.pow(deltaX0[0],2) + Math.pow(deltaX0[1],2), 0.5);
-
-        let normal0 = [deltaX0[0]/distance, deltaX0[1]/distance];
-
-        let deltaV0 = [ball.velocity[0] - circleVelocity0[0], ball.velocity[1] - circleVelocity0[1]];
-
-        let relativeSpeed = deltaV0[0]*normal0[0] + deltaV0[1]*normal0[1];
-        
-        if (relativeSpeed<0){
-            ball.velocity[0] -= 2*relativeSpeed*normal0[0];
-            ball.velocity[1] -= 2*relativeSpeed*normal0[1];
-        }
     }
 
-    computeCharacterCollision(other: Character){
-        let deltaX : number[] = [
-            other.position[0] - this.position[0],
-            other.position[1] - this.position[1]
-        ];
-        let distance = Math.pow(Math.pow(deltaX[0],2) + Math.pow(deltaX[1],2), 0.5);
-
-        if (distance > (this.size/2 + other.size/2)){return}
-
-        let normalVector = [deltaX[0]/distance, deltaX[1]/distance];
-
-        if (normalVector[1] < 0){
-            other.touchingGround = true;
-            setTimeout(()=>{other.touchingGround=false}, 200)
-        } else if (normalVector[1] > 0){
-            this.touchingGround = true;
-            setTimeout(()=>{this.touchingGround=false}, 200)
-        }
-
-        let relativeVelocity = [
-            other.velocity[0] - this.velocity[0],
-            other.velocity[1] - this.velocity[1]
-        ];
-        let relativeNormalSpeed = relativeVelocity[0]*normalVector[0] + relativeVelocity[1]*normalVector[1];
-
-        if (relativeNormalSpeed >= 0){return}
-
-        this.velocity[0] += relativeNormalSpeed*normalVector[0];
-        this.velocity[1] += relativeNormalSpeed*normalVector[1];
-        other.velocity[0] -= relativeNormalSpeed*normalVector[0];
-        other.velocity[1] -= relativeNormalSpeed*normalVector[1];
-
+    getTipVelocity(){
+        let tipCenter = this.getTipCenter();
+        return [
+            (tipCenter[1]-this.position[1]) * this.foot.thetadot + this.velocity[0],
+            -(tipCenter[0]-this.position[0]) * this.foot.thetadot + this.velocity[1]
+        ]
     }
 
     checkPressedKeys(currentlyPressedKeys){
@@ -395,6 +301,7 @@ export class GoalClass {
     side: Side;
     barWidth: number;
     position: number[];
+    collisionElements : ColliderElement[];
 
     constructor(game: GameData, side: Side){
         this.width = 80;
@@ -412,62 +319,28 @@ export class GoalClass {
                 game.scenarioSize[1] - this.height/2
             ]           
         }
+        this.collisionElements = [
+            new RectangleCollider(
+                () => {return [this.position[0], this.position[1] - this.height/2 + this.barWidth/2]},
+                () => {return [0,0]},
+                () => {},
+                () => {return this.width},
+                () => {return this.barWidth},
+                () => {return 0},
+                () => {return 0},
+                0
+            ),
+            new CircleCollider(
+                () => {if (this.side==Side.left){
+                            return [this.position[0] + this.width/2, this.position[1] - this.height/2 + this.barWidth/2]
+                        } else {
+                            return [this.position[0] - this.width/2, this.position[1] - this.height/2 + this.barWidth/2]
+                        }},
+                () => {return [0, 0]},
+                () => {},
+                () => {return this.barWidth/2},
+                0
+            )
+        ]
     }
-
-    computeCircleCollision(circle){
-
-        let barCenter: number[];
-        let barLength: number;
-        let cornerCenter: number[];
-        let cornerRadius: number;
-
-        barLength = this.width;
-        cornerRadius = this.width/2;
-        barCenter = [this.position[0], this.position[1] - this.height/2 + this.barWidth/2];
-
-        if (this.side === Side.left){
-            cornerCenter = [
-                this.position[0]+this.width/2,
-                barCenter[1]
-            ];
-        } else {
-            cornerCenter = [
-                this.position[0]-this.width/2,
-                barCenter[1]
-            ];            
-        }
-
-        let deltaY = circle.position[1] - barCenter[1];
-
-        if (circle.position[0] <= barCenter[0]+barLength/2 && 
-            circle.position[0] >= barCenter[0]-barLength/2){
-
-                if (Math.abs(deltaY) > circle.size/2 + this.barWidth/2){
-                    return
-                }
-                if (circle.velocity[1] * deltaY >= 0){
-                    return
-                }
-
-            circle.velocity[1] *= -1;
-            return
-        }
-
-        let deltaX = circle.position[0] - cornerCenter[0];
-
-        let distance = Math.pow(Math.pow(deltaX,2) + Math.pow(deltaY,2), 0.5);
-
-        if (distance > (circle.size/2 + this.barWidth/2)) {return};
-
-        let normal = [deltaX/distance, deltaY/distance];
-
-        let relativeSpeed = circle.velocity[0]*normal[0] + circle.velocity[1]*normal[1];
-
-        if (relativeSpeed < 0){
-            circle.velocity[0] -= 2*relativeSpeed*normal[0];
-            circle.velocity[1] -= 2*relativeSpeed*normal[1];
-        }
-        
-    }
-
 }
