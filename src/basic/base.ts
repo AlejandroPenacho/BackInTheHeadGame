@@ -22,6 +22,16 @@ interface CharacterState {
     velocity: number[];
     touchingGround: boolean;
 }
+interface FootProps {
+    length : number,
+    width : number,
+    alpha : number,
+    thetaLimits : number[]
+}
+interface FootState {
+    theta : number,
+    thetaDot : number
+}
 
 export enum Side {
     left,
@@ -157,17 +167,17 @@ export class Character {
                 () => {return this.getFootPosition()},
                 () => {return this.state.velocity},
                 (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
-                () => {return this.foot.rectLength},
-                () => {return this.foot.width},
+                () => {return this.foot.props.length - this.foot.props.width},
+                () => {return this.foot.props.width},
                 () => {return this.getFootAngle()},
-                () => {return this.foot.thetadot},
+                () => {return this.getFootAngularSpeed()},
                 1
             ),
             new CircleCollider(
                 () => {return this.getTipCenter()},
                 () => {return this.getTipVelocity()},
                 (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
-                () => {return this.foot.width/2},
+                () => {return this.foot.props.width/2},
                 1
             )               
         ]
@@ -175,21 +185,18 @@ export class Character {
 
     getFootPosition() : number[] {
 
-        let footAngle;
-        let theta;
-
-        footAngle = this.getFootAngle();
-        theta = this.foot.theta;
+        let footAngle = this.getFootAngle();
+        let theta = this.getFootTheta();
 
         let moveToCharacterCenter = this.state.position;
         let moveToEdge = [
-            (this.props.size/2-this.foot.width/2) * Math.sin(theta*Math.PI/180),
-            (this.props.size/2-this.foot.width/2) * Math.cos(theta*Math.PI/180)
+            (this.props.size/2-this.foot.props.width/2) * Math.sin(theta*Math.PI/180),
+            (this.props.size/2-this.foot.props.width/2) * Math.cos(theta*Math.PI/180)
         ]
 
         let lastTouch = [
-            (this.foot.length/2 - this.foot.width/2) * Math.cos(footAngle*Math.PI/180),
-            -(this.foot.length/2 - this.foot.width/2) * Math.sin(footAngle*Math.PI/180)
+            (this.foot.props.length/2 - this.foot.props.width/2) * Math.cos(footAngle*Math.PI/180),
+            -(this.foot.props.length/2 - this.foot.props.width/2) * Math.sin(footAngle*Math.PI/180)
         ];
 
 
@@ -200,24 +207,44 @@ export class Character {
     }
 
     getFootAngle(){
-        return this.foot.theta - this.foot.alpha;
+        if (this.props.side == Side.left){
+            return this.foot.state.theta - this.foot.props.alpha;
+        } else {
+            return 180 - this.foot.state.theta + this.foot.props.alpha
+        }
+    }
+    getFootAngularSpeed(){
+        if (this.props.side == Side.left){
+            return this.foot.state.thetaDot
+        } else {
+            return -this.foot.state.thetaDot
+        }
+    }
+
+    getFootTheta(){
+        if (this.props.side == Side.left){
+            return this.foot.state.theta
+        } else {
+            return -this.foot.state.theta
+        }
     }
 
     getTipCenter(){
         let footCenter = this.getFootPosition();
         let footAngle = this.getFootAngle();
+        let rectLength = this.foot.props.length - this.foot.props.width;
 
         return [
-            footCenter[0] + this.foot.rectLength/2 * Math.cos(footAngle*Math.PI/180),
-            footCenter[1] - this.foot.rectLength/2 * Math.sin(footAngle*Math.PI/180)
+            footCenter[0] + rectLength/2 * Math.cos(footAngle*Math.PI/180),
+            footCenter[1] - rectLength/2 * Math.sin(footAngle*Math.PI/180)
         ]
     }
 
     getTipVelocity(){
         let tipCenter = this.getTipCenter();
         return [
-            (tipCenter[1]-this.state.position[1]) * this.foot.thetadot + this.state.velocity[0],
-            -(tipCenter[0]-this.state.position[0]) * this.foot.thetadot + this.state.velocity[1]
+            (tipCenter[1]-this.state.position[1]) * this.getFootAngularSpeed() + this.state.velocity[0],
+            -(tipCenter[0]-this.state.position[0]) * this.getFootAngularSpeed() + this.state.velocity[1]
         ]
     }
 
@@ -241,25 +268,21 @@ export class Character {
             this.state.touchingGround = false;
         }
 
-        if (currentlyPressedKeys[this.keybinding.kick] && this.foot.theta < 90){
-            this.foot.theta = Math.min(this.foot.theta, 90);
-            if (this.props.side == Side.left){
-                this.foot.thetadot = 2*Math.PI;
-            } else {
-                this.foot.thetadot = -2*Math.PI;
-            }
+        if (currentlyPressedKeys[this.keybinding.kick] && this.foot.state.theta < this.foot.props.thetaLimits[1]){
+            this.foot.state.theta = Math.min(this.foot.state.theta, this.foot.props.thetaLimits[1]);
+
+            this.foot.state.thetaDot = 2*Math.PI;
+
         }
-        if (!currentlyPressedKeys[this.keybinding.kick] && this.foot.theta > 0){
-            this.foot.theta = Math.max(this.foot.theta, 0);
-            if (this.props.side == Side.left){
-                this.foot.thetadot = -4*Math.PI;
-            } else {
-                this.foot.thetadot = 4*Math.PI;
-            }
+        if (!currentlyPressedKeys[this.keybinding.kick] && this.foot.state.theta > this.foot.props.thetaLimits[0]){
+            this.foot.state.theta = Math.max(this.foot.state.theta, this.foot.props.thetaLimits[0]);
+            
+            this.foot.state.thetaDot = -4*Math.PI;
+
         }
-        if (!currentlyPressedKeys[this.keybinding.kick] && (this.foot.theta===0) || 
-            (currentlyPressedKeys[this.keybinding.kick] && this.foot.theta===90)){
-                this.foot.thetadot = 0;
+        if (!currentlyPressedKeys[this.keybinding.kick] && (this.foot.state.theta===this.foot.props.thetaLimits[0]) || 
+            (currentlyPressedKeys[this.keybinding.kick] && this.foot.state.theta===this.foot.props.thetaLimits[1])){
+                this.foot.state.thetaDot = 0;
         }
     }
 
@@ -267,14 +290,13 @@ export class Character {
         this.state.position[0] += this.state.velocity[0] * timestep;
         this.state.position[1] += this.state.velocity[1] * timestep;
 
-        if (this.props.side == Side.left){
-            this.foot.theta += this.foot.thetadot * 180/Math.PI *  timestep;
-        } else {
-            this.foot.theta -= this.foot.thetadot * 180/Math.PI * timestep;
-        }
 
-        this.foot.theta = Math.min(Math.max(this.foot.theta, 0), 90);
+        this.foot.state.theta += this.foot.state.thetaDot * 180/Math.PI *  timestep;
+
+        this.foot.state.theta = Math.min(Math.max(this.foot.state.theta, this.foot.props.thetaLimits[0]), this.foot.props.thetaLimits[1]);
+
         this.state.velocity[1] += gravity * timestep;
+
       if (this.desiredVelocity!==this.state.velocity[0] && this.state.touchingGround){
           
         if (this.desiredVelocity === 0){
@@ -282,9 +304,6 @@ export class Character {
         } else {
             this.state.velocity[0] = this.desiredVelocity;
         }
-            
-
-
       }
         
     }
@@ -293,20 +312,31 @@ export class Character {
 
 class Foot {
 
-    theta : number;
-    thetadot : number;
-    alpha : number;
-    length : number;
-    width : number;
-    rectLength : number;
+    state : FootState;
+    props : FootProps;
 
     constructor(side) {
-        this.theta = 0;
-        this.thetadot = 0;
-        this.alpha = 0;
-        this.length = 80;
-        this.width = 30;
-        this.rectLength = this.length - this.width;
+        
+        if (side === Side.left){
+            var alpha = 0;
+            var thetaLimits = [0, 90];
+        } else {
+            var alpha = 90;
+            var thetaLimits = [90, 150];
+        }
+        
+        this.props = {
+            length : 80,
+            width : 30,
+            alpha : alpha,
+            thetaLimits : thetaLimits
+        }
+
+        this.state = {
+            theta : thetaLimits[0],
+            thetaDot : 0
+        }
+
     }
 }
 
