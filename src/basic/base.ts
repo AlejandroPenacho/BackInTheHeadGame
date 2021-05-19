@@ -1,11 +1,26 @@
-import { couldStartTrivia } from "typescript";
 import {ColliderElement, CircleCollider, RectangleCollider} from "./collision";
+
+
+
 
 export interface Keybinding {
     left : string,
     right : string,
     jump : string,
     kick : string
+}
+
+interface CharacterProps {
+    size : number;
+    color : string;
+    maxSpeed: number;
+    jumpSpeed: number;
+    side: Side;
+}
+interface CharacterState {
+    position : number[];
+    velocity: number[];
+    touchingGround: boolean;
 }
 
 export enum Side {
@@ -38,13 +53,6 @@ export let standardPlayerConfig = {
 }
 // Check https://en.key-test.ru/ for appropiate keybindings
 
-
-function changeBase(coord : number[], angle : number) : number[] {
-    return [
-        coord[0] * Math.cos(angle * Math.PI/180) - coord[1] * Math.sin(angle*Math.PI/180),
-        coord[0] * Math.sin(angle * Math.PI/180) + coord[1] * Math.cos(angle * Math.PI/180)
-    ]
-}
 
 export class GameData {
     scenarioSize : number[];
@@ -95,53 +103,60 @@ export class BallClass {
 }
 
 export class Character {
-    position: number[];
-    velocity: number[];
+
+    state: CharacterState;
+    props : CharacterProps;
     desiredVelocity: number;
-    maxSpeed: number;
-    jumpSpeed: number;
-    touchingGround : boolean;
     keybinding : Keybinding;
     foot : Foot;
-    color : string;
-    size : number;
-    side: Side;
     collisionElements : ColliderElement[];
 
     constructor(side : Side) {
 
-        if (side === Side.left){
-            this.position = standardPlayerConfig["left"].position;
-            this.keybinding = standardPlayerConfig["left"].keybinding;
-            this.color = standardPlayerConfig["left"].color;
-        } else {
-            this.position = standardPlayerConfig["right"].position;
-            this.keybinding = standardPlayerConfig["right"].keybinding;
-            this.color = standardPlayerConfig["right"].color;
+
+        this.props = {
+            side : side,
+            color : "",
+            maxSpeed : 200,
+            jumpSpeed : 600,
+            size : 70
         }
 
-        this.side = side;
-        this.velocity = [0,0];
+        if (side === Side.left){
+            this.state = {
+                position : standardPlayerConfig["left"].position,
+                velocity : [0,0],
+                touchingGround : false
+            }
+            this.keybinding = standardPlayerConfig["left"].keybinding;
+            this.props.color = standardPlayerConfig["left"].color;
+        } else {
+            this.state = {
+                position : standardPlayerConfig["right"].position,
+                velocity : [0,0],
+                touchingGround : false
+            }
+            this.keybinding = standardPlayerConfig["right"].keybinding;
+            this.props.color = standardPlayerConfig["right"].color;
+        }
+
+            
         this.desiredVelocity = 0;
-        this.touchingGround = false;
-        this.size = 70;
-        this.maxSpeed = 200;
-        this.jumpSpeed = 600;
 
         this.foot = new Foot(side);
 
         this.collisionElements = [
             new CircleCollider(
-                () => {return this.position},
-                () => {return this.velocity},
-                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
-                () => {return this.size/2},
+                () => {return this.state.position},
+                () => {return this.state.velocity},
+                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
+                () => {return this.props.size/2},
                 1
             ),
             new RectangleCollider(
                 () => {return this.getFootPosition()},
-                () => {return this.velocity},
-                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
+                () => {return this.state.velocity},
+                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
                 () => {return this.foot.rectLength},
                 () => {return this.foot.width},
                 () => {return this.getFootAngle()},
@@ -151,7 +166,7 @@ export class Character {
             new CircleCollider(
                 () => {return this.getTipCenter()},
                 () => {return this.getTipVelocity()},
-                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
+                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
                 () => {return this.foot.width/2},
                 1
             )               
@@ -166,10 +181,10 @@ export class Character {
         footAngle = this.getFootAngle();
         theta = this.foot.theta;
 
-        let moveToCharacterCenter = this.position;
+        let moveToCharacterCenter = this.state.position;
         let moveToEdge = [
-            (this.size/2-this.foot.width/2) * Math.sin(theta*Math.PI/180),
-            (this.size/2-this.foot.width/2) * Math.cos(theta*Math.PI/180)
+            (this.props.size/2-this.foot.width/2) * Math.sin(theta*Math.PI/180),
+            (this.props.size/2-this.foot.width/2) * Math.cos(theta*Math.PI/180)
         ]
 
         let lastTouch = [
@@ -201,34 +216,34 @@ export class Character {
     getTipVelocity(){
         let tipCenter = this.getTipCenter();
         return [
-            (tipCenter[1]-this.position[1]) * this.foot.thetadot + this.velocity[0],
-            -(tipCenter[0]-this.position[0]) * this.foot.thetadot + this.velocity[1]
+            (tipCenter[1]-this.state.position[1]) * this.foot.thetadot + this.state.velocity[0],
+            -(tipCenter[0]-this.state.position[0]) * this.foot.thetadot + this.state.velocity[1]
         ]
     }
 
     checkPressedKeys(currentlyPressedKeys){
 
         if (currentlyPressedKeys[this.keybinding.right]) {
-            this.velocity[0] = this.maxSpeed;
-            this.desiredVelocity = this.maxSpeed;
+            this.state.velocity[0] = this.props.maxSpeed;
+            this.desiredVelocity = this.props.maxSpeed;
         }
         if (currentlyPressedKeys[this.keybinding.left]) {
-            this.velocity[0] = -this.maxSpeed;
-            this.desiredVelocity = -this.maxSpeed;
+            this.state.velocity[0] = -this.props.maxSpeed;
+            this.desiredVelocity = -this.props.maxSpeed;
         }
         if (!currentlyPressedKeys[this.keybinding.right] && !currentlyPressedKeys[this.keybinding.left]){
-            this.velocity[0] = 0;
+            this.state.velocity[0] = 0;
             this.desiredVelocity = 0;
         }
 
-        if (currentlyPressedKeys[this.keybinding.jump] && this.touchingGround) {
-            this.velocity[1] = -this.jumpSpeed;
-            this.touchingGround = false;
+        if (currentlyPressedKeys[this.keybinding.jump] && this.state.touchingGround) {
+            this.state.velocity[1] = -this.props.jumpSpeed;
+            this.state.touchingGround = false;
         }
 
         if (currentlyPressedKeys[this.keybinding.kick] && this.foot.theta < 90){
             this.foot.theta = Math.min(this.foot.theta, 90);
-            if (this.side == Side.left){
+            if (this.props.side == Side.left){
                 this.foot.thetadot = 2*Math.PI;
             } else {
                 this.foot.thetadot = -2*Math.PI;
@@ -236,7 +251,7 @@ export class Character {
         }
         if (!currentlyPressedKeys[this.keybinding.kick] && this.foot.theta > 0){
             this.foot.theta = Math.max(this.foot.theta, 0);
-            if (this.side == Side.left){
+            if (this.props.side == Side.left){
                 this.foot.thetadot = -4*Math.PI;
             } else {
                 this.foot.thetadot = 4*Math.PI;
@@ -249,23 +264,23 @@ export class Character {
     }
 
     integrateTime(timestep : number, gravity : number){
-        this.position[0] += this.velocity[0] * timestep;
-        this.position[1] += this.velocity[1] * timestep;
+        this.state.position[0] += this.state.velocity[0] * timestep;
+        this.state.position[1] += this.state.velocity[1] * timestep;
 
-        if (this.side == Side.left){
+        if (this.props.side == Side.left){
             this.foot.theta += this.foot.thetadot * 180/Math.PI *  timestep;
         } else {
             this.foot.theta -= this.foot.thetadot * 180/Math.PI * timestep;
         }
 
         this.foot.theta = Math.min(Math.max(this.foot.theta, 0), 90);
-        this.velocity[1] += gravity * timestep;
-      if (this.desiredVelocity!==this.velocity[0] && this.touchingGround){
+        this.state.velocity[1] += gravity * timestep;
+      if (this.desiredVelocity!==this.state.velocity[0] && this.state.touchingGround){
           
         if (this.desiredVelocity === 0){
-            this.velocity[0] *=0.6;
+            this.state.velocity[0] *=0.6;
         } else {
-            this.velocity[0] = this.desiredVelocity;
+            this.state.velocity[0] = this.desiredVelocity;
         }
             
 

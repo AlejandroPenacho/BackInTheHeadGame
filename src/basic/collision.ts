@@ -1,7 +1,8 @@
 
 enum ColliderElementType {
     Circle,
-    Rectangle
+    Rectangle,
+    BoundingBox
 }
 
 
@@ -14,7 +15,7 @@ export class ColliderElement {
 
     constructor(position    : () => number[],
                 velocity    : () => number[],
-                changeVelocity : () => number[],
+                changeVelocity : (deltaV : number[]) => void,
                 type        : ColliderElementType, 
                 fixIndex    : number){
 
@@ -51,6 +52,25 @@ export class RectangleCollider extends ColliderElement {
         this.angle = angle;
         this.angularSpeed = angularSpeed;
     }
+}
+
+export class BoundingBoxCollider extends ColliderElement {
+
+    angle : number;
+    bounds : number[][];
+
+    constructor(position, width, length, angle, fixIndex){
+        super(position, ()=> {return [0,0]}, ()=>{}, ColliderElementType.BoundingBox, fixIndex);
+        this.angle = angle;
+
+        this.bounds = [
+            [this.position[0]-length/2, this.position[0]+length/2],
+            [this.position[1]-width/2, this.position[1]+width/2]
+        ]
+    }
+
+
+
 }
 
 function changeBase(coord : number[], angle : number) : number[] {
@@ -103,8 +123,35 @@ function computeElementCollision(A : ColliderElement, B : ColliderElement){
             computeRectangle2CircleCollision(B as RectangleCollider, A as CircleCollider);
             return;
         }
+
+        if (A.type === ColliderElementType.BoundingBox && B.type === ColliderElementType.Circle){
+            computeBoundingBox2CircleCollision(A as BoundingBoxCollider, B as CircleCollider);
+            return;
+        }
+
+        if (A.type === ColliderElementType.Circle && B.type === ColliderElementType.BoundingBox){
+            computeBoundingBox2CircleCollision(B as BoundingBoxCollider, A as CircleCollider);
+            return;
+        }
 }
 
+
+function computeBoundingBox2CircleCollision(A: BoundingBoxCollider, B: CircleCollider){
+
+    if (B.position[0] <= A.bounds[0][0]){
+        return
+    }
+    if (B.position[0] >= A.bounds[0][1]){
+        return
+    }
+    if (B.position[1] <= A.bounds[1][0]){
+        return
+    }
+    if (B.position[1] >= A.bounds[1][1]){
+        return
+    }
+
+}
 
 function computeCircle2CircleCollision(A : CircleCollider, B: CircleCollider){
 

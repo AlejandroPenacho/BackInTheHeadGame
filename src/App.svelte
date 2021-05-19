@@ -82,14 +82,14 @@
 
             player.integrateTime(timestep, game.gravity);
             
-            player.position[0] = Math.min(Math.max(player.position[0], player.size/2), game.scenarioSize[0] - player.size/2);
+            player.state.position[0] = Math.min(Math.max(player.state.position[0], player.props.size/2), game.scenarioSize[0] - player.props.size/2);
 
-            if  (player.position[1] >= (game.scenarioSize[1] - player.size/2) &&
-                (player.velocity[1] > 0)){
+            if  (player.state.position[1] >= (game.scenarioSize[1] - player.props.size/2) &&
+                (player.state.velocity[1] > 0)){
 
-                    player.velocity[1] = 0;
-                    player.position[1] = game.scenarioSize[1] - player.size/2;
-                    player.touchingGround = true;
+                    player.state.velocity[1] = 0;
+                    player.state.position[1] = game.scenarioSize[1] - player.props.size/2;
+                    player.state.touchingGround = true;
             }
         }
 
