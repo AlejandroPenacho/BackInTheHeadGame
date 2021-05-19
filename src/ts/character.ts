@@ -1,14 +1,6 @@
-import {ColliderElement, CircleCollider, RectangleCollider} from "./collision";
-
-
-
-
-export interface Keybinding {
-    left : string,
-    right : string,
-    jump : string,
-    kick : string
-}
+import { Side } from "./base";
+import {ColliderElement, CircleCollider, RectangleCollider} from "./collision"
+import { standardPlayerConfig} from "./standardConf";
 
 interface CharacterProps {
     size : number;
@@ -22,6 +14,12 @@ interface CharacterState {
     velocity: number[];
     touchingGround: boolean;
 }
+export interface Keybinding {
+    left : string,
+    right : string,
+    jump : string,
+    kick : string
+}
 interface FootProps {
     length : number,
     width : number,
@@ -33,84 +31,6 @@ interface FootState {
     thetaDot : number
 }
 
-export enum Side {
-    left,
-    right
-}
-
-
-export let standardPlayerConfig = {
-    left : {
-        color : "orange",
-        position : [200,500],
-        keybinding : {
-            jump : "s",
-            left : "z",
-            right : "c",
-            kick : "b"          
-        }
-    },
-    right : {
-        color : "cyan",
-        position : [800,500],
-        keybinding : {
-            jump : "ArrowUp",
-            left : "ArrowLeft",
-            right : "ArrowRight",
-            kick : "l"     
-        }        
-    }
-}
-// Check https://en.key-test.ru/ for appropiate keybindings
-
-
-export class GameData {
-    scenarioSize : number[];
-    gravity: number;
-    nPlayers : number;
-
-    constructor() {
-        this.scenarioSize = [1000, 600],
-        this.gravity = 900,
-        this.nPlayers = 2;
-    }
-}
-
-export class BallClass {
-
-    position: number[];
-    velocity: number[];
-    size : number;
-    dragCoefficient: number;
-    collisionElements: ColliderElement[];
-
-    constructor(){
-        this.position = [500, 200];
-        this.velocity = [0, 0];
-        this.size = 50;
-        this.dragCoefficient = 0.00003;
-        this.collisionElements = [
-            new CircleCollider(
-                () => {return this.position},
-                () => {return this.velocity},
-                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
-                () => {return this.size/2},
-                2
-            )
-        ]
-    }
-
-
-    integrateTime(timestep : number, gravity : number){
-        this.position[0] += this.velocity[0] * timestep;
-        this.position[1] += this.velocity[1] * timestep;
-
-        this.velocity[1] += gravity * timestep;
-
-        this.velocity[0] -= this.dragCoefficient * this.velocity[0] * Math.abs(this.velocity[0]);
-        this.velocity[1] -= this.dragCoefficient * this.velocity[1] * Math.abs(this.velocity[1]);
-    }
-}
 
 export class Character {
 
@@ -310,6 +230,7 @@ export class Character {
 
 }
 
+
 class Foot {
 
     state : FootState;
@@ -340,52 +261,3 @@ class Foot {
     }
 }
 
-export class GoalClass {
-    width: number;
-    height: number;
-    side: Side;
-    barWidth: number;
-    position: number[];
-    collisionElements : ColliderElement[];
-
-    constructor(game: GameData, side: Side){
-        this.width = 80;
-        this.height = 200;
-        this.barWidth = 20;
-        this.side = side;
-        if (side === Side.left){
-            this.position = [
-                this.width/2,
-                game.scenarioSize[1] - this.height/2
-            ]
-        } else {
-            this.position = [
-                game.scenarioSize[0] - this.width/2,
-                game.scenarioSize[1] - this.height/2
-            ]           
-        }
-        this.collisionElements = [
-            new RectangleCollider(
-                () => {return [this.position[0], this.position[1] - this.height/2 + this.barWidth/2]},
-                () => {return [0,0]},
-                () => {},
-                () => {return this.width},
-                () => {return this.barWidth},
-                () => {return 0},
-                () => {return 0},
-                0
-            ),
-            new CircleCollider(
-                () => {if (this.side==Side.left){
-                            return [this.position[0] + this.width/2, this.position[1] - this.height/2 + this.barWidth/2]
-                        } else {
-                            return [this.position[0] - this.width/2, this.position[1] - this.height/2 + this.barWidth/2]
-                        }},
-                () => {return [0, 0]},
-                () => {},
-                () => {return this.barWidth/2},
-                0
-            )
-        ]
-    }
-}

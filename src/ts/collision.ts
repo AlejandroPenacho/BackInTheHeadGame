@@ -139,15 +139,19 @@ function computeElementCollision(A : ColliderElement, B : ColliderElement){
 function computeBoundingBox2CircleCollision(A: BoundingBoxCollider, B: CircleCollider){
 
     if (B.position[0] <= A.bounds[0][0]){
+        B.changeVelocity([-2*B.velocity[0], 0]);
         return
     }
     if (B.position[0] >= A.bounds[0][1]){
+        B.changeVelocity([-2*B.velocity[0], 0]);
         return
     }
     if (B.position[1] <= A.bounds[1][0]){
+        B.changeVelocity([0, -2*B.velocity[0]]);
         return
     }
     if (B.position[1] >= A.bounds[1][1]){
+        B.changeVelocity([0, -2*B.velocity[0]]);
         return
     }
 
