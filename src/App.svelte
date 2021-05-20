@@ -105,7 +105,7 @@
 </div>
 
 <p>
-    {game.ball.position}
+    {game.characterList[1].state.touchingGround}
 </p>
 
 <!--

@@ -14,7 +14,7 @@ export class Game {
     collidableObjects : any[];
     dynamicObjects : any[];
 
-    gravity : number;;
+    gravity : number;
     
     score : number[];
     currentTime: number;

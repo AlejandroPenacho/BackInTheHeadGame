@@ -79,14 +79,18 @@ export class Character {
             new CircleCollider(
                 () => {return this.state.position},
                 () => {return this.state.velocity},
-                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
+                (deltaV) => {
+                    this.state.velocity[0] += deltaV[0]; 
+                    this.state.velocity[1] = Math.max(this.state.velocity[1]+deltaV[1], 0);
+                    if (deltaV[1] < 0){this.state.touchingGround = true}
+                },
                 () => {return this.props.size/2},
                 1
             ),
             new RectangleCollider(
                 () => {return this.getFootPosition()},
                 () => {return this.state.velocity},
-                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
+                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] = Math.max(this.state.velocity[1]+deltaV[1], 0)},
                 () => {return this.foot.props.length - this.foot.props.width},
                 () => {return this.foot.props.width},
                 () => {return this.getFootAngle()},
@@ -96,7 +100,7 @@ export class Character {
             new CircleCollider(
                 () => {return this.getTipCenter()},
                 () => {return this.getTipVelocity()},
-                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] += deltaV[1]},
+                (deltaV) => {this.state.velocity[0] += deltaV[0]; this.state.velocity[1] = Math.max(this.state.velocity[1]+deltaV[1], 0)},
                 () => {return this.foot.props.width/2},
                 1
             )               
