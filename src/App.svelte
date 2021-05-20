@@ -86,12 +86,14 @@
 
     div.score {
         width: 100%;
-        margin: auto;
         display: flex;
+        flex-direction: column;
+        margin-top: 60px;
         font-size: 80px;
         color: white;
         position: absolute;
         justify-content: center;
+        align-items: center;
     }
 
     div.control {
@@ -106,7 +108,8 @@
     <Goal data={game.goalList[0]}/>
     <Goal data={game.goalList[1]}/>
     <div class="score">
-        <p>{game.score[0]}-{game.score[1]}</p>
+        <p style="margin: 10px">{game.score[0]}-{game.score[1]}</p>
+        <p style="font-size: 30px; margin: 10px">{Math.floor((60-game.realTime)*10)/10} s</p>
     </div>
     {#each game.characterList as player}
         <Player player={player} />

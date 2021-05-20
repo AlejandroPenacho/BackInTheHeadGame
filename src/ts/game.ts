@@ -18,6 +18,7 @@ export class Game {
     
     score : number[];
     currentTime: number;
+    realTime : number;
     recentGoal : boolean;
 
     constructor(characterList){
@@ -41,10 +42,12 @@ export class Game {
 
         if (this.currentTime === undefined){
             this.currentTime = currentTime;
+            this.realTime = 0;
         }
 
         let timestep = (currentTime - this.currentTime)/1000;
         this.currentTime = currentTime;
+        this.realTime += timestep;
 
 
         this.dynamicObjects.forEach((element) => element.integrateTime(timestep, this.gravity));
