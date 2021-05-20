@@ -9,19 +9,19 @@ enum ColliderElementType {
 export class ColliderElement {
     position : () => number[];
     velocity : () => number[];
-    changeVelocity : (deltaV : number[]) => void;
+    changeState : (deltaX : number[], deltaV : number[]) => void;
     type : ColliderElementType;
     fixIndex : number;
 
     constructor(position    : () => number[],
                 velocity    : () => number[],
-                changeVelocity : (deltaV : number[]) => void,
+                changeState : (deltaX : number[], deltaV : number[]) => void,
                 type        : ColliderElementType, 
                 fixIndex    : number){
 
         this.position = position;
         this.velocity = velocity;
-        this.changeVelocity = changeVelocity;
+        this.changeState = changeState;
         this.type = type;
         this.fixIndex = fixIndex;
     }
@@ -30,9 +30,9 @@ export class ColliderElement {
 export class CircleCollider extends ColliderElement{
     radius : () => number;
 
-    constructor(position, velocity, changeVelocity, radius, fixIndex){
+    constructor(position, velocity, changeState, radius, fixIndex){
 
-        super(position, velocity, changeVelocity, ColliderElementType.Circle, fixIndex);
+        super(position, velocity, changeState, ColliderElementType.Circle, fixIndex);
         this.radius = radius;
     }
 }
@@ -44,9 +44,9 @@ export class RectangleCollider extends ColliderElement {
     angle : () => number;
     angularSpeed : () => number;
 
-    constructor(position, velocity, changeVelocity, length, width, angle, angularSpeed, fixIndex){
+    constructor(position, velocity, changeState, length, width, angle, angularSpeed, fixIndex){
 
-        super(position, velocity, changeVelocity, ColliderElementType.Rectangle, fixIndex);
+        super(position, velocity, changeState, ColliderElementType.Rectangle, fixIndex);
         this.length = length;
         this.width = width;
         this.angle = angle;
@@ -77,19 +77,19 @@ function changeBase(coord : number[], angle : number) : number[] {
     ]
 }
 
-function distributeMomentum(A, B, deltaVelocity){
+function distributeMomentum(A, B, deltaX, deltaVelocity){
     if (A.fixIndex > B.fixIndex){
-        A.changeVelocity([2*deltaVelocity[0], 2*deltaVelocity[1]]);
+        A.changeState([0,0], [2*deltaVelocity[0], 2*deltaVelocity[1]]);
         return
     }
 
     if (A.fixIndex < B.fixIndex){
-        B.changeVelocity([-2*deltaVelocity[0], -2*deltaVelocity[1]]);
+        B.changeState([0,0],[-2*deltaVelocity[0], -2*deltaVelocity[1]]);
         return 
     }
     if (A.fixIndex === B.fixIndex){
-        A.changeVelocity([deltaVelocity[0], deltaVelocity[1]]);
-        B.changeVelocity([-deltaVelocity[0], -deltaVelocity[1]]);
+        A.changeState([0,0], [deltaVelocity[0], deltaVelocity[1]]);
+        B.changeState([0,0], [-deltaVelocity[0], -deltaVelocity[1]]);
         return
     }
 }
@@ -140,19 +140,23 @@ function computeBoundingBox2CircleCollision(A: BoundingBoxCollider, B: CircleCol
     let velocity = B.velocity();
 
     if (((position[0]-radius) <= A.bounds[0][0]) && velocity[0] < 0){
-        B.changeVelocity([-2*B.velocity()[0], 0]);
+        let deltaX = [A.bounds[0][0]- (position[0]-radius), 0];
+        B.changeState(deltaX,[-2*velocity[0], 0]);
         return
     }
     if (((position[0]+radius) >= A.bounds[0][1]) && velocity[0] > 0){
-        B.changeVelocity([-2*B.velocity()[0], 0]);
+        let deltaX = [A.bounds[0][1] - (position[0]+radius), 0];
+        B.changeState(deltaX,[-2*velocity[0], 0]);
         return
     }
     if (((position[1]-radius) <= A.bounds[1][0]) && velocity[1] < 0){
-        B.changeVelocity([0, -2*B.velocity()[1]]);
+        let deltaY = [0, A.bounds[1][0]- (position[1]-radius)];
+        B.changeState(deltaY,[0, -2*velocity[1]]);
         return
     }
     if (((position[1]+radius) >= A.bounds[1][1]) && velocity[1] > 0){
-        B.changeVelocity([0, -2*B.velocity()[1]]);
+        let deltaY = [0, A.bounds[1][1]-(position[1]+radius)];
+        B.changeState(deltaY,[0, -2*velocity[1]]);
         return
     }
 
@@ -177,7 +181,12 @@ function computeCircle2CircleCollision(A : CircleCollider, B: CircleCollider){
 
     if (relativeNormalSpeed > 0){ return }
 
-    distributeMomentum(A, B, [relativeNormalSpeed*normalVector[0], relativeNormalSpeed*normalVector[1]])
+    let deltaPosition = [
+        (distance - A.radius() - B.radius()) * deltaX/distance,
+        (distance - A.radius() - B.radius()) * deltaY/distance
+    ]
+
+    distributeMomentum(A, B, deltaPosition,[relativeNormalSpeed*normalVector[0], relativeNormalSpeed*normalVector[1]])
     
 }
 
@@ -233,6 +242,6 @@ function computeRectangle2CircleCollision(rectangle : RectangleCollider, circle 
         normalRelativeSpeedMag * normal0[1]
     ]
 
-    distributeMomentum(rectangle, circle, normalRelativeVelocity0)
+    distributeMomentum(rectangle, circle, [0,0],normalRelativeVelocity0)
 
 }

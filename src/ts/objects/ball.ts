@@ -17,7 +17,12 @@ export class Ball {
             new CircleCollider(
                 () => {return this.position},
                 () => {return this.velocity},
-                (deltaV) => {this.velocity[0] += deltaV[0]; this.velocity[1] += deltaV[1]},
+                (deltaX, deltaV) => {
+                    this.position[0] += deltaX[0];
+                    this.position[1] += deltaX[1];
+                    this.velocity[0] += deltaV[0];
+                    this.velocity[1] += deltaV[1]
+                },
                 () => {return this.size/2},
                 2
             )
