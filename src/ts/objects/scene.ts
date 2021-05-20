@@ -1,4 +1,4 @@
-import { BoundingBoxCollider, ColliderElement } from "./collision";
+import { BoundingBoxCollider, ColliderElement } from "../collision";
 
 export interface SceneData {
     size : number[];

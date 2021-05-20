@@ -1,6 +1,6 @@
-import { Side } from "./base";
-import {ColliderElement, CircleCollider, RectangleCollider} from "./collision"
-import { standardPlayerConfig} from "./standardConf";
+import { Side } from "../base";
+import {ColliderElement, CircleCollider, RectangleCollider} from "../collision"
+import { standardPlayerConfig} from "../standardConf";
 
 interface CharacterProps {
     size : number;
@@ -242,8 +242,8 @@ class Foot {
             var alpha = 0;
             var thetaLimits = [0, 90];
         } else {
-            var alpha = 90;
-            var thetaLimits = [90, 150];
+            var alpha = 0;
+            var thetaLimits = [0, 90];
         }
         
         this.props = {

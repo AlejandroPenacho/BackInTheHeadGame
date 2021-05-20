@@ -1,8 +1,9 @@
 <script lang="ts">
-import { GoalClass, Side } from "./basic/base";
+    import { Side } from "../ts/base";
+    import { Goal} from "../ts/objects/goal"
 
 
-    export let data : GoalClass;
+    export let data : Goal;
 
     let xTranslate : number;
     let border : string;

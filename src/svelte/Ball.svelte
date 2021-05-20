@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let data;
+    export let ball;
     
 </script>
 
@@ -10,8 +10,8 @@
     }
 </style>
 
-<div style="height: {data.size}px;
-            width: {data.size}px;
-            border-radius: {data.size/2}px;
-            transform: translate({data.position[0]}px, {data.position[1]}px) translate(-50%, -50%)">
+<div style="height: {ball.size}px;
+            width: {ball.size}px;
+            border-radius: {ball.size/2}px;
+            transform: translate({ball.position[0]}px, {ball.position[1]}px) translate(-50%, -50%)">
 </div>

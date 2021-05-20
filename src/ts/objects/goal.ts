@@ -1,5 +1,5 @@
-import {Side} from "./base";
-import { ColliderElement, RectangleCollider, CircleCollider } from "./collision";
+import {Side} from "../base";
+import { ColliderElement, RectangleCollider, CircleCollider } from "../collision";
 import {SceneData} from "./scene";
 
 export class Goal {

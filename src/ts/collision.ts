@@ -68,9 +68,6 @@ export class BoundingBoxCollider extends ColliderElement {
             [this.position[1]-width/2, this.position[1]+width/2]
         ]
     }
-
-
-
 }
 
 function changeBase(coord : number[], angle : number) : number[] {
@@ -138,20 +135,24 @@ function computeElementCollision(A : ColliderElement, B : ColliderElement){
 
 function computeBoundingBox2CircleCollision(A: BoundingBoxCollider, B: CircleCollider){
 
-    if (B.position[0] <= A.bounds[0][0]){
-        B.changeVelocity([-2*B.velocity[0], 0]);
+    let position = B.position();
+    let radius = B.radius();
+    let velocity = B.velocity();
+
+    if (((position[0]-radius) <= A.bounds[0][0]) && velocity[0] < 0){
+        B.changeVelocity([-2*B.velocity()[0], 0]);
         return
     }
-    if (B.position[0] >= A.bounds[0][1]){
-        B.changeVelocity([-2*B.velocity[0], 0]);
+    if (((position[0]+radius) >= A.bounds[0][1]) && velocity[0] > 0){
+        B.changeVelocity([-2*B.velocity()[0], 0]);
         return
     }
-    if (B.position[1] <= A.bounds[1][0]){
-        B.changeVelocity([0, -2*B.velocity[0]]);
+    if (((position[1]-radius) <= A.bounds[1][0]) && velocity[1] < 0){
+        B.changeVelocity([0, -2*B.velocity()[1]]);
         return
     }
-    if (B.position[1] >= A.bounds[1][1]){
-        B.changeVelocity([0, -2*B.velocity[0]]);
+    if (((position[1]+radius) >= A.bounds[1][1]) && velocity[1] > 0){
+        B.changeVelocity([0, -2*B.velocity()[1]]);
         return
     }
 

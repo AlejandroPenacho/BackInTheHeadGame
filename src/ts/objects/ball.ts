@@ -1,6 +1,6 @@
-import { ColliderElement, CircleCollider } from "./collision";
+import { ColliderElement, CircleCollider } from "../collision";
 
-export class BallClass {
+export class Ball {
 
     position: number[];
     velocity: number[];
@@ -33,5 +33,6 @@ export class BallClass {
 
         this.velocity[0] -= this.dragCoefficient * this.velocity[0] * Math.abs(this.velocity[0]);
         this.velocity[1] -= this.dragCoefficient * this.velocity[1] * Math.abs(this.velocity[1]);
+
     }
 }
