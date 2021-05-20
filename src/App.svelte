@@ -3,6 +3,7 @@
     import Player from "./svelte/Player.svelte";
     import Ball from "./svelte/Ball.svelte";
     import Goal from "./svelte/Goal.svelte";
+    import MainMenu from "./svelte/MainMenu.svelte";
     import {Game} from "./ts/game";
     import {Character} from "./ts/objects/character";
     import { Side } from "./ts/base";
@@ -14,6 +15,8 @@
     ]);
 
     let currentlyPressedKeys = {};
+
+    let playingGame = false;
 
     let keyPressed;
 
@@ -52,7 +55,13 @@
     document.onkeyup = processKeyUp;
 
 
-    requestAnimationFrame(rAFRfunction);
+    function startFunction(){
+        playingGame = true;
+        requestAnimationFrame(rAFRfunction);
+    }
+
+
+    
 
     function rAFRfunction(time){
         game.computeNextFrame(time);
@@ -62,6 +71,7 @@
 
 </script>
 
+{#if playingGame}
 <style>
     div.mainScene{
         background-color:darkblue;
@@ -107,6 +117,12 @@
 <p>
     {game.characterList[1].state.touchingGround}
 </p>
+
+{:else}
+    <MainMenu startFunction={startFunction}/>
+{/if}
+
+
 
 <!--
 <div class="control" on:click={clickFunction("control")}>
