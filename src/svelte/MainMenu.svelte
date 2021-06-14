@@ -2,7 +2,7 @@
     import { Side } from "../ts/base";
 
     import { Character } from "../ts/objects/character";
-import Player from "./Player.svelte";
+    import Player from "./Player.svelte";
 
     export let startFunction;
 
@@ -24,6 +24,13 @@ import Player from "./Player.svelte";
         new Character(Side.left),
         new Character(Side.right)
     ]
+
+    let characterColorIndex = [0, 1];
+
+    characterList.forEach((character) => character.state.position = [70,70]);
+    characterList = characterList;
+
+    let colorList = ["orange", "cyan", "green", "red", "black", "yellow"];
 
     function selectEnd(type : Objective){
         return () => {
@@ -62,12 +69,47 @@ import Player from "./Player.svelte";
     function deleteCharacter(index){
         return ()=>{
             characterList.splice(index, 1);
+            characterColorIndex.splice(index, 1);
             characterList = characterList;
         }
     }
     function addPlayer(){
-        characterList.push(new Character(Side.left));
+        let newCharacter = new Character(Side.left);
+        newCharacter.state.position = [70, 70];
+        characterList.push(newCharacter);
+        characterColorIndex.push(0);
+
         characterList = characterList;
+    }
+
+    function changeCharacterSide(index){
+        return () => {
+            let character = characterList[index];
+            if (character.props.side == Side.left){
+                character.props.side = Side.right;
+            } else {
+                character.props.side = Side.left;
+            }
+            characterList = characterList;
+        }
+    }
+
+    function changeCharacterColor(index, change){
+        return ()=> {
+            characterColorIndex[index] += change;
+            if (characterColorIndex[index] == colorList.length) {
+                characterColorIndex[index] = 0;
+            }
+            if (characterColorIndex[index] < 0) {
+                characterColorIndex[index] = colorList.length - 1;
+            }
+            characterList[index].props.color = colorList[characterColorIndex[index]];
+            characterList = characterList;
+        };
+    }
+
+    function clickOnStart(){
+        startFunction(characterList, 0);
     }
 
 </script>
@@ -170,13 +212,32 @@ import Player from "./Player.svelte";
         display: flex;
         margin: 10px 0px;
     }
-    div.optionBarArrow {
+    div.optionBarArrowLeft {
         cursor: pointer;
-        background-color: rosybrown;
+        padding: 0px 5px 0px 5px;
+        background-color: rgb(0, 133, 99);
+        border-radius: 8px 0px 0px 8px;
     }
+    div.optionBarArrowRight {
+        cursor: pointer;
+        padding: 0px 5px 0px 5px;
+        background-color: rgb(0, 133, 99);
+        border-radius: 0px 8px 8px 0px;
+    }
+
+    div.optionBarArrowRight:hover, div.optionBarArrowLeft:hover {
+        background-color: rgb(59, 156, 132);
+    }
+    div.optionBarArrowRight:active, div.optionBarArrowLeft:active {
+        background-color: rgb(123, 172, 159);
+    }
+
     div.optionBarText {
+        background-color: rgb(0, 151, 113);
         flex-grow: 1;
         text-align: center;
+        cursor: default;
+        -moz-user-select: none;
     }
 
     div.addPlayerCard {
@@ -239,27 +300,27 @@ import Player from "./Player.svelte";
                     X
                 </div>
                 <div class="characterPortrait">
-                    El Jhnooy
+                    <Player player={characterList[index]}/>
                 </div>
                 <div class="optionBar">
-                    <div class="optionBarArrow">
+                    <div class="optionBarArrowLeft" on:click={changeCharacterColor(index, -1)}>
                         &lt;
                     </div>
                     <div class="optionBarText">
                         Skin
                     </div>
-                    <div class="optionBarArrow">
+                    <div class="optionBarArrowRight" on:click={changeCharacterColor(index, +1)}>
                         &gt;
                     </div>
                 </div>
                 <div class="optionBar">
-                    <div class="optionBarArrow">
+                    <div class="optionBarArrowLeft" on:click={changeCharacterSide(index)}>
                         &lt;
                     </div>
                     <div class="optionBarText">
                         Side
                     </div>
-                    <div class="optionBarArrow">
+                    <div class="optionBarArrowRight" on:click={changeCharacterSide(index)}>
                         &gt;
                     </div>
                 </div>
@@ -273,7 +334,7 @@ import Player from "./Player.svelte";
             </div>
             {/if}
         </div>
-        <div class="startButton" on:click={startFunction}>
+        <div class="startButton" on:click={clickOnStart}>
             PLAY
         </div>
     </div>
