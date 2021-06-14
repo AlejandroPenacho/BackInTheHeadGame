@@ -111,9 +111,9 @@ export class Character {
 
     resetPosition() {
         if (this.props.side == Side.left){
-            this.state.position = [standardPlayerConfig.left.position[0] + Math.random()*100-50, standardPlayerConfig.left.position[1]];
+            this.state.position = [standardPlayerConfig.left.position[0] + Math.random()*300-150, standardPlayerConfig.left.position[1]];
         } else {
-            this.state.position = [standardPlayerConfig.right.position[0] + Math.random()*100-50, standardPlayerConfig.right.position[1]];
+            this.state.position = [standardPlayerConfig.right.position[0] + Math.random()*300-150, standardPlayerConfig.right.position[1]];
         }
     }
 

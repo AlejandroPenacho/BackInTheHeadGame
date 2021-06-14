@@ -8,6 +8,10 @@
     import {Character} from "./ts/objects/character";
     import { Side } from "./ts/base";
 
+    enum Objective {
+        time,
+        score
+    }
 
     let game = new Game();
 
@@ -52,11 +56,11 @@
     document.onkeyup = processKeyUp;
 
 
-    function startFunction(characterList){
+    function startFunction(characterList, objective){
         for (let i=0; i< characterList.length; i++){
             characterList[i].resetPosition();
         }
-        game.start(characterList);
+        game.start(characterList, objective);
         playingGame = true;
         requestAnimationFrame(rAFRfunction);
     }
@@ -109,7 +113,9 @@
     <Goal data={game.goalList[1]}/>
     <div class="score">
         <p style="margin: 10px">{game.score[0]}-{game.score[1]}</p>
-        <p style="font-size: 30px; margin: 10px">{Math.floor((60-game.realTime)*10)/10} s</p>
+        {#if game.winConditions.type === Objective.time}
+            <p style="font-size: 30px; margin: 10px">{Math.floor((game.winConditions.number*60-game.realTime)*10)/10} s</p>
+        {/if}
     </div>
     {#each game.characterList as player}
         <Player player={player} />

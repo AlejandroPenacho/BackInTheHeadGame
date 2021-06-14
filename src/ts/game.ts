@@ -10,6 +10,7 @@ export class Game {
     goalList : Goal[];
     ball : Ball;
     scene : Scene;
+    winConditions;
 
     collidableObjects : any[];
     dynamicObjects : any[];
@@ -23,8 +24,9 @@ export class Game {
 
     constructor(){};
 
-    start(characterList){
+    start(characterList, objective){
         this.characterList = characterList;
+        this.winConditions = objective;
         this.scene = new Scene();
         this.goalList = [
             new Goal(this.scene.data, Side.left),
@@ -39,6 +41,8 @@ export class Game {
         this.collidableObjects = [...this.characterList, ...this.goalList, this.ball, this.scene];
         this.dynamicObjects = [...this.characterList, this.ball];
     }
+
+    checkWinConditions(){};
 
     computeNextFrame(currentTime){
 

@@ -109,7 +109,21 @@
     }
 
     function clickOnStart(){
-        startFunction(characterList, 0);
+
+        let objective;
+        if (objectiveType === Objective.score){
+            objective = {
+                type : Objective.score,
+                number: possibleScoreObjectives[scoreObjectiveIndex]
+            }
+        } else {
+            objective = {
+                type : Objective.time,
+                number: possibleTimeObjectives[timeObjectiveIndex]
+            }            
+        }
+
+        startFunction(characterList, objective);
     }
 
 </script>
