@@ -60,9 +60,6 @@
         requestAnimationFrame(rAFRfunction);
     }
 
-
-    
-
     function rAFRfunction(time){
         game.computeNextFrame(time);
         game = game;
@@ -71,7 +68,6 @@
 
 </script>
 
-{#if playingGame}
 <style>
     div.mainScene{
         background-color:darkblue;
@@ -96,14 +92,17 @@
         align-items: center;
     }
 
+    /*
     div.control {
         display: flex;
         justify-content: space-between;
         margin: auto;
         width: 1000px;
     }
+    */
 </style>
 
+{#if playingGame}
 <div class="mainScene" on:click={clickFunction("scene")}>
     <Goal data={game.goalList[0]}/>
     <Goal data={game.goalList[1]}/>

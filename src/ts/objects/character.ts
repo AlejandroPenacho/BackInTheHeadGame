@@ -109,6 +109,14 @@ export class Character {
         ]
     }
 
+    resetPosition() {
+        if (this.props.side == Side.left){
+            this.state.position = standardPlayerConfig.left.position;
+        } else {
+            this.state.position = standardPlayerConfig.right.position;
+        }
+    }
+
     getFootPosition() : number[] {
 
         let footAngle = this.getFootAngle();
