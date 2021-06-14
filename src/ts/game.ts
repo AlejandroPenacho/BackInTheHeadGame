@@ -21,7 +21,9 @@ export class Game {
     realTime : number;
     recentGoal : boolean;
 
-    constructor(characterList){
+    constructor(){};
+
+    start(characterList){
         this.characterList = characterList;
         this.scene = new Scene();
         this.goalList = [

@@ -9,10 +9,7 @@
     import { Side } from "./ts/base";
 
 
-    let game = new Game([
-        new Character(Side.left),
-        new Character(Side.right)
-    ]);
+    let game = new Game();
 
     let currentlyPressedKeys = {};
 
@@ -55,7 +52,11 @@
     document.onkeyup = processKeyUp;
 
 
-    function startFunction(){
+    function startFunction(characterList){
+        for (let i=0; i< characterList.length; i++){
+            characterList[i].resetPosition();
+        }
+        game.start(characterList);
         playingGame = true;
         requestAnimationFrame(rAFRfunction);
     }
