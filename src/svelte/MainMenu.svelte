@@ -2,19 +2,16 @@
     import { Side } from "../ts/base";
 
     import { Character } from "../ts/objects/character";
+    import {ObjectiveType, ObjectiveData} from "../ts/game";
     import Player from "./Player.svelte";
 
     export let startFunction;
 
-    enum Objective {
-        time,
-        score
-    }
 
     let possibleTimeObjectives = [1, 3, 5];
     let possibleScoreObjectives = [5, 10, 15];
 
-    let objectiveType = Objective.time;
+    let objectiveType = ObjectiveType.time;
     let objectiveTypeColors = ["green", "grey"];
 
     let timeObjectiveIndex = 0;
@@ -32,7 +29,7 @@
 
     let colorList = ["orange", "cyan", "green", "red", "black", "yellow"];
 
-    function selectEnd(type : Objective){
+    function selectEnd(type : ObjectiveType){
         return () => {
             objectiveType = type; 
         };
@@ -40,10 +37,10 @@
 
     $: getObjectiveBlockColor = (objective, index) => {
 
-        if ((objective===Objective.time) && (index === timeObjectiveIndex)){
+        if ((objective===ObjectiveType.time) && (index === timeObjectiveIndex)){
             return "green"
         }
-        if ((objective===Objective.score) && (index === scoreObjectiveIndex)){
+        if ((objective===ObjectiveType.score) && (index === scoreObjectiveIndex)){
             return "green"
         }
 
@@ -51,7 +48,7 @@
     }
 
     function chooseObjectiveValue(objective, index){
-        if (objective === Objective.time){
+        if (objective === ObjectiveType.time){
             return ()=> timeObjectiveIndex = index;
         } else {
             return ()=> scoreObjectiveIndex = index;
@@ -59,7 +56,7 @@
     }
 
     $: {
-        if (objectiveType===Objective.time){
+        if (objectiveType===ObjectiveType.time){
                 objectiveTypeColors = ["green", "grey"];
             } else {
                 objectiveTypeColors= ["grey", "green"]
@@ -110,15 +107,15 @@
 
     function clickOnStart(){
 
-        let objective;
-        if (objectiveType === Objective.score){
+        let objective: ObjectiveData;
+        if (objectiveType === ObjectiveType.score){
             objective = {
-                type : Objective.score,
+                type : ObjectiveType.score,
                 number: possibleScoreObjectives[scoreObjectiveIndex]
             }
         } else {
             objective = {
-                type : Objective.time,
+                type : ObjectiveType.time,
                 number: possibleTimeObjectives[timeObjectiveIndex]
             }            
         }
@@ -283,23 +280,23 @@
 
 <div class="mainDiv">
     <div class="selectEndType">
-        <div class="endTypeBlock" id="time" style="background-color: {objectiveTypeColors[0]}" on:click={selectEnd(Objective.time)}>Time</div>
-        <div class="endTypeBlock" id="score" style="background-color: {objectiveTypeColors[1]}" on:click={selectEnd(Objective.score)}>Score</div>
+        <div class="endTypeBlock" id="time" style="background-color: {objectiveTypeColors[0]}" on:click={selectEnd(ObjectiveType.time)}>Time</div>
+        <div class="endTypeBlock" id="score" style="background-color: {objectiveTypeColors[1]}" on:click={selectEnd(ObjectiveType.score)}>Score</div>
     </div>
     <div class="endOptionsList">
-        {#if (objectiveType===Objective.time)}
+        {#if (objectiveType===ObjectiveType.time)}
             {#each [0,1,2] as index}
                 <div class="endOptionBlock" 
-                     style="background-color: {getObjectiveBlockColor(Objective.time, index)}"
-                     on:click={chooseObjectiveValue(Objective.time, index)}>
+                     style="background-color: {getObjectiveBlockColor(ObjectiveType.time, index)}"
+                     on:click={chooseObjectiveValue(ObjectiveType.time, index)}>
                     {possibleTimeObjectives[index]} min
                 </div>
             {/each}       
         {:else}
             {#each [0,1,2] as index}
                 <div class="endOptionBlock" 
-                     style="background-color: {getObjectiveBlockColor(Objective.score, index)}"
-                     on:click={chooseObjectiveValue(Objective.score, index)}>
+                     style="background-color: {getObjectiveBlockColor(ObjectiveType.score, index)}"
+                     on:click={chooseObjectiveValue(ObjectiveType.score, index)}>
                     {possibleScoreObjectives[index]} goals
                 </div>
             {/each}     

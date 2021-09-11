@@ -7,6 +7,7 @@
     import {Game} from "./ts/game";
     import {Character} from "./ts/objects/character";
     import { Side } from "./ts/base";
+    import {ObjectiveType} from "./ts/game";
 
     enum Objective {
         time,
@@ -113,7 +114,7 @@
     <Goal data={game.goalList[1]}/>
     <div class="score">
         <p style="margin: 10px">{game.score[0]}-{game.score[1]}</p>
-        {#if game.winConditions.type === Objective.time}
+        {#if game.winConditions.type === ObjectiveType.time}
             <p style="font-size: 30px; margin: 10px">{Math.floor((game.winConditions.number*60-game.realTime)*10)/10} s</p>
         {/if}
     </div>

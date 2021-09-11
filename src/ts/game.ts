@@ -5,12 +5,27 @@ import {Goal} from "./objects/goal"
 import { Scene } from "./objects/scene";
 import { ColliderElement, computeObjectCollision } from "./collision";
 
+
+export enum ObjectiveType {
+    time,
+    score
+}
+export interface ObjectiveData {
+    type: ObjectiveType,
+    number: number
+}
+
+interface GameMusic {
+    audio_tracks: HTMLAudioElement[],
+    current_track: number
+}
+
 export class Game {
     characterList : Character[];
     goalList : Goal[];
     ball : Ball;
     scene : Scene;
-    winConditions;
+    winConditions: ObjectiveData;
 
     collidableObjects : any[];
     dynamicObjects : any[];
@@ -21,6 +36,8 @@ export class Game {
     currentTime: number;
     realTime : number;
     recentGoal : boolean;
+
+    music: GameMusic;
 
     constructor(){};
 
@@ -40,9 +57,43 @@ export class Game {
 
         this.collidableObjects = [...this.characterList, ...this.goalList, this.ball, this.scene];
         this.dynamicObjects = [...this.characterList, this.ball];
+
+        this.music = {
+            audio_tracks: [
+                new Audio('../../assets/track_1.mpga'),
+                new Audio('../../assets/track_2.mpga'),
+                new Audio('../../assets/track_3.mpga')
+            ],
+            current_track: 0
+        }
+        this.music.audio_tracks[this.music.current_track].play();
+    }
+    
+    update_audio(){
+        let current_progress;
+        if (this.winConditions.type === ObjectiveType.score){
+            current_progress = Math.max(...this.score)/this.winConditions.number;
+        } else {
+            current_progress = this.realTime/(this.winConditions.number*60);
+        }
+        
+        let next_track = Math.floor(current_progress*3);
+
+        if (next_track !== this.music.current_track){
+            this.music.audio_tracks[this.music.current_track].pause();
+            this.music.current_track = next_track;
+            this.music.audio_tracks[this.music.current_track].play();
+        }
+        
+        if (this.music.audio_tracks[this.music.current_track].ended){
+            this.music.audio_tracks[this.music.current_track].play();
+        }
+
     }
 
-    checkWinConditions(){};
+    checkWinConditions(){
+
+    };
 
     computeNextFrame(currentTime){
 
@@ -92,6 +143,7 @@ export class Game {
             }, 500)
         }
 
+        this.update_audio();
     }
 
 }
