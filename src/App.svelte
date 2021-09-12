@@ -98,6 +98,17 @@
         align-items: center;
     }
 
+    div.finish-container {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        color: white;
+    }
+
+
     /*
     div.control {
         display: flex;
@@ -112,16 +123,24 @@
 <div class="mainScene" on:click={clickFunction("scene")}>
     <Goal data={game.goalList[0]}/>
     <Goal data={game.goalList[1]}/>
-    <div class="score">
-        <p style="margin: 10px">{game.score[0]}-{game.score[1]}</p>
-        {#if game.winConditions.type === ObjectiveType.time}
-            <p style="font-size: 30px; margin: 10px">{Math.floor((game.winConditions.number*60-game.realTime)*10)/10} s</p>
-        {/if}
-    </div>
-    {#each game.characterList as player}
-        <Player player={player} />
-    {/each}
-    <Ball ball={game.ball} />
+    {#if game.finished}
+        <div class="finish-container">
+            <div class="finish-message">
+                {game.win_message}
+            </div>
+        </div>
+    {:else}
+        <div class="score">
+            <p style="margin: 10px">{game.score[0]}-{game.score[1]}</p>
+            {#if game.winConditions.type === ObjectiveType.time}
+                <p style="font-size: 30px; margin: 10px">{Math.floor((game.winConditions.number*60-game.realTime)*10)/10} s</p>
+            {/if}
+        </div>
+        {#each game.characterList as player}
+            <Player player={player} />
+        {/each}
+        <Ball ball={game.ball} />
+    {/if}
 </div>
 
 <p>

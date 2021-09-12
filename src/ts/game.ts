@@ -38,6 +38,8 @@ export class Game {
     recentGoal : boolean;
 
     music: GameMusic;
+    finished: boolean;
+    win_message: string;
 
     constructor(){};
 
@@ -57,6 +59,8 @@ export class Game {
 
         this.collidableObjects = [...this.characterList, ...this.goalList, this.ball, this.scene];
         this.dynamicObjects = [...this.characterList, this.ball];
+
+        this.finished = false;
 
         this.music = {
             audio_tracks: [
@@ -82,20 +86,45 @@ export class Game {
         if (next_track !== this.music.current_track){
             this.music.audio_tracks[this.music.current_track].pause();
             this.music.current_track = next_track;
-            this.music.audio_tracks[this.music.current_track].play();
+            if (this.music.current_track < this.music.audio_tracks.length){
+                this.music.audio_tracks[this.music.current_track].play();
+            }
         }
-        
-        if (this.music.audio_tracks[this.music.current_track].ended){
-            this.music.audio_tracks[this.music.current_track].play();
+        if (this.music.current_track < this.music.audio_tracks.length){
+            if (this.music.audio_tracks[this.music.current_track].ended){
+                this.music.audio_tracks[this.music.current_track].play();
+            }
         }
-
     }
 
     checkWinConditions(){
-
+        if (this.winConditions.type === ObjectiveType.time){
+            if (this.realTime >= (this.winConditions.number*60)){
+                this.finished = true;
+                if (this.score[0] === this.score[1]){
+                    this.win_message = "Draw"
+                } else if (this.score[0] > this.score[1]){
+                    this.win_message = "Left wins"
+                } else {
+                    this.win_message = "Right wins";
+                }
+            }
+        } else {
+            if (this.score[0] >= this.winConditions.number){
+                this.finished = true;
+                this.win_message = "Left wins"
+            } else if (this.score[1] >= this.winConditions.number){
+                this.finished = true;
+                this.win_message = "Right wins"
+            }
+        }
     };
 
     computeNextFrame(currentTime){
+
+        if (this.finished){
+            return
+        }
 
         if (this.currentTime === undefined){
             this.currentTime = currentTime;
@@ -144,6 +173,7 @@ export class Game {
         }
 
         this.update_audio();
+        this.checkWinConditions();
     }
 
 }
