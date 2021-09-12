@@ -9,11 +9,6 @@
     import { Side } from "./ts/base";
     import {ObjectiveType} from "./ts/game";
 
-    enum Objective {
-        time,
-        score
-    }
-
     let game = new Game();
 
     let currentlyPressedKeys = {};
