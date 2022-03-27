@@ -4,9 +4,14 @@
     import { Character } from "../ts/objects/character";
     import {ObjectiveType, ObjectiveData} from "../ts/game";
     import Player from "./Player.svelte";
+    import { element } from "svelte/internal";
+
+    export let set_key_inside;
 
     export let startFunction;
 
+    let key_window_open: boolean = false;
+    let keybinding_player: number = 0;
 
     let possibleTimeObjectives = [1, 3, 5];
     let possibleScoreObjectives = [5, 10, 15];
@@ -122,6 +127,23 @@
 
         startFunction(characterList, objective);
     }
+
+    function openKeybindingWindow(player: number) {
+        key_window_open = true;
+        keybinding_player = player;
+    }
+
+    function defineKey(player: number, key: string) {
+        characterList[player].keybinding[key] = "?";
+
+        set_key_inside = (new_key) => {
+            characterList[player].keybinding[key] = new_key;
+            set_key_inside = (_) => {}
+        }
+    }
+
+
+
 
 </script>
 
@@ -276,6 +298,55 @@
         justify-content: center;
     }
 
+    div.keybindingButton {
+        cursor: pointer;
+        background-color: blueviolet;
+        text-align: center;
+        margin: 10px 0px;
+        border-radius: 8px;
+    }
+
+    div.keybindingButton:hover {
+        background-color: crimson;
+    }
+
+    div.keybindingWindow {
+        width: 60%;
+        height:60%;
+        margin:5%;
+        position:absolute;
+        background-color:blanchedalmond;
+        display: flex;
+        flex-direction: column;
+    }
+    div.keybindingPlayer {
+        background-color: aqua;
+        padding: 10px;
+        width: 40%;
+        margin: 10px;
+    }
+    div.keybindingGrid {
+        display: grid;
+        grid-template-columns: 80px 80px;
+        grid-template-rows: repeat(4, 32px);
+        margin: 40px;
+    }
+    div.keybindingClose {
+        cursor: pointer;
+        background-color: crimson;
+        padding: 5px;
+        margin: 6px;
+        width: 40%;
+        text-align: center;
+    }
+    div.keybindingKey {
+        background-color: bisque;
+
+    }
+    div.keybindingKey:hover {
+        background-color: brown;
+    }
+
 </style>
 
 <div class="mainDiv">
@@ -335,6 +406,9 @@
                         &gt;
                     </div>
                 </div>
+                <div class="keybindingButton" on:click={() => openKeybindingWindow(index)}>
+                    Keybinding
+                </div>
             </div>
             {/each}
             {#if (characterList.length<4)}
@@ -349,4 +423,41 @@
             PLAY
         </div>
     </div>
+
+    {#if key_window_open}
+    <div class="keybindingWindow">
+        <div class="keybindingPlayer">
+            Player {keybinding_player}
+        </div>
+        <div class="keybindingGrid">
+            <div>
+                Left
+            </div>
+            <div class="keybindingKey" on:click={() => defineKey(keybinding_player, "left")}>
+                {characterList[keybinding_player].keybinding.left}
+            </div>
+            <div>
+                Right
+            </div>
+            <div class="keybindingKey" on:click={() => defineKey(keybinding_player, "right")}>
+                {characterList[keybinding_player].keybinding.right}
+            </div>
+            <div>
+                Jump
+            </div>
+            <div class="keybindingKey" on:click={() => defineKey(keybinding_player, "jump")}>
+                {characterList[keybinding_player].keybinding.jump}
+            </div>
+            <div>
+                Kick
+            </div>
+            <div class="keybindingKey" on:click={() => defineKey(keybinding_player, "kick")}>
+                {characterList[keybinding_player].keybinding.kick}
+            </div>
+        </div>
+        <div class="keybindingClose" on:click={() => {key_window_open = false}}>
+            Done
+        </div>
+    </div>
+    {/if}
 </div>

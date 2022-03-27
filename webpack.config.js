@@ -1,6 +1,6 @@
 
 module.exports = {
-    mode : "development",
+    mode : "production",
     entry : {
         "main" : `${__dirname}/src/main.ts`
     },

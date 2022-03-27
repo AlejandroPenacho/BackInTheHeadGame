@@ -17,6 +17,8 @@
 
     let keyPressed;
 
+    let set_key_outside;
+
     let activeElement: string = "scene";
 
     function processKeyDown(e: KeyboardEvent) {
@@ -27,6 +29,9 @@
         }
 
         keyPressed = e.key;
+
+        set_key_outside(e.key);
+
         if (keyPressed !== "F12" && keyPressed !== "F5" && activeElement === "scene"){
             e.preventDefault();
         }
@@ -137,13 +142,8 @@
         <Ball ball={game.ball} />
     {/if}
 </div>
-
-<p>
-    {game.characterList[1].state.touchingGround}
-</p>
-
 {:else}
-    <MainMenu startFunction={startFunction}/>
+    <MainMenu startFunction={startFunction} bind:set_key_inside={set_key_outside}/>
 {/if}
 
 

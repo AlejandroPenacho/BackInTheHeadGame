@@ -64,9 +64,9 @@ export class Game {
 
         this.music = {
             audio_tracks: [
-                new Audio('../../assets/track_1.mpga'),
-                new Audio('../../assets/track_2.mpga'),
-                new Audio('../../assets/track_3.mpga')
+                new Audio('./assets/track_1.mpga'),
+                new Audio('./assets/track_2.mpga'),
+                new Audio('./assets/track_3.mpga')
             ],
             current_track: 0
         }
