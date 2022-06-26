@@ -30,6 +30,8 @@
 
         keyPressed = e.key;
 
+        console.log(`Key pressed: ${keyPressed}`)
+
         set_key_outside(e.key);
 
         if (keyPressed !== "F12" && keyPressed !== "F5" && activeElement === "scene"){

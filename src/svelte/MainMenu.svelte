@@ -6,7 +6,7 @@
     import Player from "./Player.svelte";
     import { element } from "svelte/internal";
 
-    export let set_key_inside;
+    export let set_key_inside = (_) => {};
 
     export let startFunction;
 
